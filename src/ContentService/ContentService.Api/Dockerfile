@@ -2,10 +2,12 @@
 
 # Этот этап используется при запуске из VS в быстром режиме (по умолчанию для конфигурации отладки)
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
-USER $APP_UID
+ARG APP_UID=10001
+RUN if id -u app >/dev/null 2>&1; then echo "user app already exists"; else useradd --create-home --uid $APP_UID app; fi
 WORKDIR /app
 EXPOSE 8080
-EXPOSE 8081
+ENV ASPNETCORE_URLS=http://+:8080
+USER app
 
 
 # Этот этап используется для сборки проекта службы
