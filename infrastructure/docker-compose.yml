@@ -1,0 +1,176 @@
+name: cityguide
+
+services:
+  apigateway:
+    container_name: cityguide-apigateway
+    image: ${REGISTRY:-local}/cityguide-apigateway:${TAG:-dev}
+    build:
+      context: ..
+      dockerfile: src/ApiGateway/ApiGateway.Api/Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+    restart: unless-stopped
+    ports:
+      - "${GATEWAY_PORT:-8080}:8080"
+    networks:
+      - cityguide
+
+  authservice:
+    container_name: cityguide-authservice
+    image: ${REGISTRY:-local}/cityguide-authservice:${TAG:-dev}
+    build:
+      context: ..
+      dockerfile: src/AuthService/AuthService.Api/Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+    restart: unless-stopped
+    ports:
+      - "${AUTH_PORT:-8081}:8080"
+    networks:
+      - cityguide
+
+  userservice:
+    container_name: cityguide-userservice
+    image: ${REGISTRY:-local}/cityguide-userservice:${TAG:-dev}
+    build:
+      context: ..
+      dockerfile: src/UserService/UserService.Api/Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+    restart: unless-stopped
+    ports:
+      - "${USER_PORT:-8082}:8080"
+    networks:
+      - cityguide
+
+  contentservice:
+    container_name: cityguide-contentservice
+    image: ${REGISTRY:-local}/cityguide-contentservice:${TAG:-dev}
+    build:
+      context: ..
+      dockerfile: src/ContentService/ContentService.Api/Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+    restart: unless-stopped
+    ports:
+      - "${CONTENT_PORT:-8083}:8080"
+    networks:
+      - cityguide
+
+  notificationservice:
+    container_name: cityguide-notificationservice
+    image: ${REGISTRY:-local}/cityguide-notificationservice:${TAG:-dev}
+    build:
+      context: ..
+      dockerfile: src/NotificationService/NotificationService.Api/Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+    restart: unless-stopped
+    ports:
+      - "${NOTIFICATION_PORT:-8084}:8080"
+    networks:
+      - cityguide
+
+  postgres:
+    container_name: cityguide-postgres
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-cityguide}
+      POSTGRES_USER: ${POSTGRES_USER:-cityguide}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-cityguide}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - cityguide-postgres:/var/lib/postgresql/data
+      - ./postgres/init-multiple-dbs.sh:/docker-entrypoint-initdb.d/01-init-multiple-dbs.sh:ro
+    networks:
+      - cityguide
+
+  redis:
+    container_name: cityguide-redis
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - cityguide-redis:/data
+    networks:
+      - cityguide
+
+  redis-commander:
+    container_name: cityguide-redis-commander
+    image: rediscommander/redis-commander:latest
+    restart: unless-stopped
+    environment:
+      REDIS_HOSTS: local:redis:6379
+    depends_on:
+      - redis
+    ports:
+      - "${REDIS_COMMANDER_PORT:-8085}:8081"
+    networks:
+      - cityguide
+
+  zookeeper:
+    container_name: cityguide-zookeeper
+    image: confluentinc/cp-zookeeper:7.6.1
+    restart: unless-stopped
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "${ZOOKEEPER_PORT:-2181}:2181"
+    networks:
+      - cityguide
+
+  kafka:
+    container_name: cityguide-kafka
+    image: confluentinc/cp-kafka:7.6.1
+    restart: unless-stopped
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    ports:
+      - "${KAFKA_PORT:-9092}:9092"
+    networks:
+      - cityguide
+
+  minio:
+    container_name: cityguide-minio
+    image: minio/minio:latest
+    restart: unless-stopped
+    command: ["server", "/data", "--console-address", ":9001"]
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
+    ports:
+      - "${MINIO_PORT:-9000}:9000"
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+    volumes:
+      - cityguide-minio:/data
+    networks:
+      - cityguide
+
+networks:
+  cityguide:
+    name: cityguide
+
+volumes:
+  cityguide-postgres:
+  cityguide-redis:
+  cityguide-minio:
+
