@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Http.HttpResults;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -32,6 +34,13 @@ app.MapGet("/weatherforecast", () =>
     return forecast;
 })
 .WithName("GetWeatherForecast");
+
+app.MapGet("/api/notifications/health", () => new
+{
+    service = "NotifactionsService",  
+    status = "Healthy",
+    timestamp = DateTime.UtcNow
+});
 
 app.Run();
 
