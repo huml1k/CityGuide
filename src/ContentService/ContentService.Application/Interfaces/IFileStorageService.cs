@@ -29,10 +29,11 @@ public interface IFileStorageService
     Task DeleteFileAsync(string fileName, CancellationToken ct = default);
     
     /// <summary>
-    /// Получить Url файла для установки
+    /// Генерирует временный Url к файлу
     /// </summary>
     /// <param name="fileName">Имя файла</param>
     /// <param name="ct">Токен отмены</param>
+    /// <param name="expiry">Длительность ссылки</param>
     /// <returns></returns>
-    Task<string> GetFileUrlAsync(string fileName, CancellationToken ct = default);
+    Task<string> GetFileUrlAsync(string fileName, CancellationToken ct = default, TimeSpan? expiry = null);
 }

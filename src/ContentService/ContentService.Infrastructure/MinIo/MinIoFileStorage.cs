@@ -8,10 +8,14 @@ using Minio.DataModel.Args;
 
 namespace ContentService.Infrastructure.MinIo;
 
+/// <summary>
+/// Класс для взаимодействия с хранилищем MinIo
+/// </summary>
 public class MinIoFileStorage : IFileStorageService
 {
     private readonly MinIoOptions _options;
     private readonly IMinioClient _client;
+    private readonly int _timeLimitMinutes = 5; 
 
     public MinIoFileStorage(IOptions<MinIoOptions> options)
     {
@@ -24,12 +28,7 @@ public class MinIoFileStorage : IFileStorageService
     
     public async Task<string> UploadFileAsync(Stream stream, string fileName, string contentType, CancellationToken ct = default)
     {
-        var beArgs = new BucketExistsArgs().WithBucket(_options.ContentBucket);
-        if (!await _client.BucketExistsAsync(beArgs, ct))
-        {
-            var mbArgs = new MakeBucketArgs().WithBucket(_options.ContentBucket);
-            await _client.MakeBucketAsync(mbArgs, ct);
-        }
+        await EnsureBucketExistsAsync(ct);
         
         var putArgs = new PutObjectArgs()
             .WithBucket(_options.ContentBucket)
@@ -42,18 +41,51 @@ public class MinIoFileStorage : IFileStorageService
         return x.ObjectName;
     }
 
-    public Task<Stream> DownloadFileAsync(string fileName, CancellationToken ct = default)
+    public async Task<Stream> DownloadFileAsync(string fileName, CancellationToken ct = default)
     {
+        await EnsureBucketExistsAsync(ct);
+        
+        var args = new GetObjectArgs()
+            .WithBucket(_options.ContentBucket)
+            .WithFile(fileName);
+        await _client.GetObjectAsync(args, ct);
+
         throw new NotImplementedException();
     }
 
-    public Task DeleteFileAsync(string fileName, CancellationToken ct = default)
+    public async Task DeleteFileAsync(string fileName, CancellationToken ct = default)
     {
-        throw new NotImplementedException();
+        await EnsureBucketExistsAsync(ct);
+        
+        await _client.RemoveObjectAsync(
+            new RemoveObjectArgs()
+                .WithBucket(_options.ContentBucket)
+                .WithObject(fileName),
+            ct);
     }
 
-    public Task<string> GetFileUrlAsync(string fileName, CancellationToken ct = default)
+    public async Task<string> GetFileUrlAsync(string fileName, CancellationToken ct = default, TimeSpan? expiry = null)
     {
-        throw new NotImplementedException();
+        await EnsureBucketExistsAsync(ct);
+        
+        var expirySeconds = (expiry ?? TimeSpan.FromMinutes(5)).TotalSeconds;
+
+        var req = new PresignedGetObjectArgs()
+            .WithBucket(_options.ContentBucket)
+            .WithObject(fileName)
+            .WithExpiry((int)expirySeconds);
+        
+        var url = await _client.PresignedGetObjectAsync(req);
+        return url;
+    }
+
+    private async Task EnsureBucketExistsAsync(CancellationToken ct)
+    {
+        var beArgs = new BucketExistsArgs().WithBucket(_options.ContentBucket);
+        if (!await _client.BucketExistsAsync(beArgs, ct))
+        {
+            var mbArgs = new MakeBucketArgs().WithBucket(_options.ContentBucket);
+            await _client.MakeBucketAsync(mbArgs, ct);
+        }
     }
 }
