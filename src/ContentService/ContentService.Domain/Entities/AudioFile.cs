@@ -16,11 +16,11 @@ namespace ContentService.Domain.Entities
         [Column("route_id")]
         public long RouteId { get; set; }
 
-        [Column("file_key")]
-        [MaxLength(500)]
+        [Column("file_extension")]
+        [MaxLength(5)]
         [Required]
-        public string FileKey { get; set; } = string.Empty;  //путь в MinIO
-
+        public required string FileExtension { get; set; }  //Разрешение файла ogg, mp3 и тп
+        
         [Column("duration_seconds")]
         public int? DurationSeconds { get; set; }
 

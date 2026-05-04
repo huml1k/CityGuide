@@ -16,10 +16,11 @@ namespace ContentService.Domain.Entities
         [Column("route_id")]
         public long RouteId { get; set; }
 
-        [Column("file_key")]
-        [MaxLength(500)]
+        
+        [Column("file_extension")]
+        [MaxLength(5)]
         [Required]
-        public string FileKey { get; set; } = string.Empty;
+        public required string FileExtension { get; set; }  //Разрешение файла png, jpg и тп
 
         [Column("is_cover")]
         public bool IsCover { get; set; } = false;
