@@ -1,0 +1,97 @@
+# This is a generated file. Not intended for manual editing.
+services:
+  apigateway:
+    build:
+      context: "C:\\Users\\parsifal\\Desktop\\Старый пк\\Программирование\\CityGuide"
+      dockerfile: "src/ApiGateway/ApiGateway.Api/Dockerfile"
+      target: "base"
+    command: []
+    entrypoint:
+    - "dotnet"
+    - "/app/bin/Debug/net10.0/ApiGateway.Api.dll"
+    environment:
+      DOTNET_USE_POLLING_FILE_WATCHER: "true"
+    image: "local/cityguide-apigateway:dev"
+    ports: []
+    volumes:
+    - "C:\\Users\\parsifal\\Desktop\\Старый пк\\Программирование\\CityGuide\\src\\\
+      ApiGateway\\ApiGateway.Api:/app:rw"
+    - "C:\\Users\\parsifal\\Desktop\\Старый пк\\Программирование\\CityGuide:/src:rw"
+    - "C:\\Users\\parsifal\\.nuget\\packages:/home/app/.nuget/packages"
+    working_dir: "/app"
+  authservice:
+    build:
+      context: "C:\\Users\\parsifal\\Desktop\\Старый пк\\Программирование\\CityGuide"
+      dockerfile: "src/AuthService/AuthService.Api/Dockerfile"
+      target: "base"
+    command: []
+    entrypoint:
+    - "dotnet"
+    - "/app/bin/Debug/net10.0/AuthService.Api.dll"
+    environment:
+      DOTNET_USE_POLLING_FILE_WATCHER: "true"
+    image: "local/cityguide-authservice:dev"
+    ports: []
+    volumes:
+    - "C:\\Users\\parsifal\\Desktop\\Старый пк\\Программирование\\CityGuide\\src\\\
+      AuthService\\AuthService.Api:/app:rw"
+    - "C:\\Users\\parsifal\\Desktop\\Старый пк\\Программирование\\CityGuide:/src:rw"
+    - "C:\\Users\\parsifal\\.nuget\\packages:/home/app/.nuget/packages"
+    working_dir: "/app"
+  contentservice:
+    build:
+      context: "C:\\Users\\parsifal\\Desktop\\Старый пк\\Программирование\\CityGuide"
+      dockerfile: "src/ContentService/ContentService.Api/Dockerfile"
+      target: "base"
+    command: []
+    entrypoint:
+    - "dotnet"
+    - "/app/bin/Debug/net10.0/ContentService.Api.dll"
+    environment:
+      DOTNET_USE_POLLING_FILE_WATCHER: "true"
+    image: "local/cityguide-contentservice:dev"
+    ports: []
+    volumes:
+    - "C:\\Users\\parsifal\\Desktop\\Старый пк\\Программирование\\CityGuide\\src\\\
+      ContentService\\ContentService.Api:/app:rw"
+    - "C:\\Users\\parsifal\\Desktop\\Старый пк\\Программирование\\CityGuide:/src:rw"
+    - "C:\\Users\\parsifal\\.nuget\\packages:/home/app/.nuget/packages"
+    working_dir: "/app"
+  notificationservice:
+    build:
+      context: "C:\\Users\\parsifal\\Desktop\\Старый пк\\Программирование\\CityGuide"
+      dockerfile: "src/NotificationService/NotificationService.Api/Dockerfile"
+      target: "base"
+    command: []
+    entrypoint:
+    - "dotnet"
+    - "/app/bin/Debug/net10.0/NotificationService.Api.dll"
+    environment:
+      DOTNET_USE_POLLING_FILE_WATCHER: "true"
+    image: "local/cityguide-notificationservice:dev"
+    ports: []
+    volumes:
+    - "C:\\Users\\parsifal\\Desktop\\Старый пк\\Программирование\\CityGuide\\src\\\
+      NotificationService\\NotificationService.Api:/app:rw"
+    - "C:\\Users\\parsifal\\Desktop\\Старый пк\\Программирование\\CityGuide:/src:rw"
+    - "C:\\Users\\parsifal\\.nuget\\packages:/home/app/.nuget/packages"
+    working_dir: "/app"
+  userservice:
+    build:
+      context: "C:\\Users\\parsifal\\Desktop\\Старый пк\\Программирование\\CityGuide"
+      dockerfile: "src/UserService/UserService.Api/Dockerfile"
+      target: "base"
+    command: []
+    entrypoint:
+    - "dotnet"
+    - "/app/bin/Debug/net10.0/UserService.Api.dll"
+    environment:
+      DOTNET_USE_POLLING_FILE_WATCHER: "true"
+    image: "local/cityguide-userservice:dev"
+    ports: []
+    volumes:
+    - "C:\\Users\\parsifal\\Desktop\\Старый пк\\Программирование\\CityGuide\\src\\\
+      UserService\\UserService.Api:/app:rw"
+    - "C:\\Users\\parsifal\\Desktop\\Старый пк\\Программирование\\CityGuide:/src:rw"
+    - "C:\\Users\\parsifal\\.nuget\\packages:/home/app/.nuget/packages"
+    working_dir: "/app"
