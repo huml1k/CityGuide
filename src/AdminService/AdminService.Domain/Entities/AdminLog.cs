@@ -28,8 +28,11 @@ namespace AdminService.Domain.Entities
         [Column("details")]
         public JsonDocument? Details { get; set; }
 
+        [Column("ip_address")]
+        [MaxLength(45)]
+        public string? IpAddress { get; set; }
+
         [Column("created_at")]
         public DateTime CreatedAt { get; set; }
-
     }
 }
