@@ -16,6 +16,7 @@ docker compose -f infrastructure/docker-compose.yml up --build
 - `UserService`: `http://localhost:8082`
 - `ContentService`: `http://localhost:8083`
 - `NotificationService`: `http://localhost:8084`
+- `AdminService`: `http://localhost:8085`
 
 Внутри системы (контейнер → контейнер) обращаться нужно по DNS-именам сервисов и порту `8080`, например из `apigateway` в `userservice`: `http://userservice:8080`.
 
@@ -32,7 +33,7 @@ docker compose -f infrastructure/docker-compose.yml up --build
   - с ПК: `localhost:6379`
   - внутри Docker: `redis:6379`
 - **Redis Commander (UI)**:
-  - с ПК: `http://localhost:8085`
+  - с ПК: `http://localhost:8086`
 - **Kafka**:
   - с ПК: `localhost:9092`
   - внутри Docker: `kafka:9092`
