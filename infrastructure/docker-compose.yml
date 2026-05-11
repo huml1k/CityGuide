@@ -87,7 +87,7 @@ services:
       ASPNETCORE_URLS: http://+:8080
     restart: unless-stopped
     ports:
-      - "${NOTIFICATION_PORT:-8085}:8080"
+      - "${ADMIN_PORT:-8085}:8080"
     networks:
       - cityguide
 
@@ -96,17 +96,17 @@ services:
     image: postgres:16
     restart: unless-stopped
     environment:
-      POSTGRES_DB: user_db
-      POSTGRES_USER: cityguide
-      POSTGRES_PASSWORD: cityguide
+      POSTGRES_DB: ${USER_DB_NAME}
+      POSTGRES_USER: ${USER_DB_USER}
+      POSTGRES_PASSWORD: ${USER_DB_PASSWORD}
     ports:
-      - "5434:5432"
+      - "${USER_DB_PORT}:5432"
     volumes:
       - user-db-data:/var/lib/postgresql/data
     networks:
       - cityguide
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U cityguide"]
+      test: ["CMD-SHELL", "pg_isready -U cityguide -d user_db"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -116,17 +116,17 @@ services:
     image: postgres:16
     restart: unless-stopped
     environment:
-      POSTGRES_DB: content_db
-      POSTGRES_USER: cityguide
-      POSTGRES_PASSWORD: cityguide
+      POSTGRES_DB: ${CONTENT_DB_NAME}
+      POSTGRES_USER: ${CONTENT_DB_USER}
+      POSTGRES_PASSWORD: ${CONTENT_DB_PASSWORD}
     ports:
-      - "5435:5432"
+      - "${CONTENT_DB_PORT}:5432"
     volumes:
       - content-db-data:/var/lib/postgresql/data
     networks:
       - cityguide
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U cityguide"]
+      test: ["CMD-SHELL", "pg_isready -U cityguide -d content_db"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -136,17 +136,17 @@ services:
     image: postgres:16
     restart: unless-stopped
     environment:
-      POSTGRES_DB: notification_db
-      POSTGRES_USER: cityguide
-      POSTGRES_PASSWORD: cityguide
+      POSTGRES_DB: ${NOTIFICATION_DB_NAME}
+      POSTGRES_USER: ${NOTIFICATION_DB_USER}
+      POSTGRES_PASSWORD: ${NOTIFICATION_DB_PASSWORD}
     ports:
-      - "5436:5432"
+      - "${NOTIFICATION_DB_PORT}:5432"
     volumes:
       - notification-db-data:/var/lib/postgresql/data
     networks:
       - cityguide
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U cityguide"]
+      test: ["CMD-SHELL", "pg_isready -U cityguide -d notification_db"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -156,17 +156,44 @@ services:
     image: postgres:16
     restart: unless-stopped
     environment:
-      POSTGRES_DB: admin_db
-      POSTGRES_USER: cityguide
-      POSTGRES_PASSWORD: cityguide
+      POSTGRES_DB: ${ADMIN_DB_NAME}
+      POSTGRES_USER: ${ADMIN_DB_USER}
+      POSTGRES_PASSWORD: ${ADMIN_DB_PASSWORD}
     ports:
-      - "5437:5432"
+      - "${ADMIN_DB_PORT}:5432"
     volumes:
       - admin-db-data:/var/lib/postgresql/data
     networks:
       - cityguide
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U cityguide"]
+      test: ["CMD-SHELL", "pg_isready -U cityguide -d admin_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  pgadmin:
+    container_name: cityguide-pgadmin
+    image: dpage/pgadmin4:latest
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL:  admin@cityguide.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+      PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION: "False"   
+      PGADMIN_DISABLE_POSTFIX: "True"                      
+    ports:
+      - "5050:80"
+    networks:
+      - cityguide
+    depends_on:
+      - user-db
+      - content-db
+      - notification-db
+      - admin-db
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/misc/ping"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -192,7 +219,7 @@ services:
     depends_on:
       - redis
     ports:
-      - "${REDIS_COMMANDER_PORT:-8085}:8081"
+      - "${REDIS_COMMANDER_PORT:-8086}:8081"
     networks:
       - cityguide
 
@@ -255,6 +282,7 @@ volumes:
   content-db-data:
   notification-db-data:
   admin-db-data:
+  pgadmin-data:
   cityguide-redis:
   cityguide-minio:
 
