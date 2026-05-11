@@ -12,7 +12,7 @@ namespace NotificationService.Domain.Entities
     {
         [Key]
         [Column("id")]
-        public int Id { get; set; }
+        public Guid Id { get; set; }
 
         [Column("user_id")]
         public int UserId { get; set; }
