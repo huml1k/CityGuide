@@ -11,7 +11,7 @@ namespace AuthService.Domain.Entities
     {
         [Key]
         [Column("id")]
-        public long Id { get; set; }
+        public Guid Id { get; set; }
 
         [Column("email")]
         [MaxLength(255)]
