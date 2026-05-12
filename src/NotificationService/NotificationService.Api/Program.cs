@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using NotificationService.Infrastructure.Kafka;
 using NotificationService.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,6 +13,8 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<NotificationDbContext>(options =>
     options.UseNpgsql(
         builder.Configuration.GetConnectionString("DefaultConnection")));
+
+//builder.Services.AddHostedService<PushNotificationKafkaConsumer>();
 
 var app = builder.Build();
 
@@ -30,5 +33,12 @@ using (var scope = app.Services.CreateScope())
 
 app.UseAuthorization();
 app.MapControllers();
+
+app.MapGet("/api/notifications/health", () => new
+{
+    service = "NotifactionsService",
+    status = "Healthy",
+    timestamp = DateTime.UtcNow
+});
 
 app.Run();
