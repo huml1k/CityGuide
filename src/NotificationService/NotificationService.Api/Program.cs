@@ -31,4 +31,11 @@ using (var scope = app.Services.CreateScope())
 app.UseAuthorization();
 app.MapControllers();
 
+app.MapGet("/api/notifications/health", () => new
+{
+    service = "NotifactionsService",
+    status = "Healthy",
+    timestamp = DateTime.UtcNow
+});
+
 app.Run();
