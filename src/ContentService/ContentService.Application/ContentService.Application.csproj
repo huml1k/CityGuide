@@ -4,6 +4,12 @@
     <ProjectReference Include="..\ContentService.Domain\ContentService.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Features\Routes\DTOs\" />
+    <Folder Include="Features\Statistics\" />
+    <Folder Include="Features\AudioProgress\" />
+  </ItemGroup>
+
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>

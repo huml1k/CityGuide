@@ -32,7 +32,7 @@ namespace ContentService.Domain.Entities
 
         [Column("status")]
         [MaxLength(50)]
-        public string Status { get; set; } = "draft";   // draft, approved, rejected,
+        public string Status { get; set; } = "draft";   
 
         [Column("google_maps_url")]
         [MaxLength(500)]
