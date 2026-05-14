@@ -22,5 +22,6 @@ namespace ContentService.Domain.Entities
         [Column("reviews_count")]
         public int ReviewsCount { get; set; }
 
+        public Route Route { get; set; } = null!;
     }
 }

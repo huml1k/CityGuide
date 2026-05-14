@@ -1,6 +1,7 @@
 ﻿using Confluent.Kafka;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
@@ -12,26 +13,24 @@ namespace NotificationService.Infrastructure.Kafka
     {
         private readonly IConsumer<Ignore, string> _consumer;
         private readonly IConfiguration _config;
+        private readonly ILogger<PushNotificationKafkaConsumer> _logger;
       
         public PushNotificationKafkaConsumer(
-            IConfiguration config) 
+            IConfiguration config,
+            ILogger<PushNotificationKafkaConsumer> logger) 
         {
+            _logger = logger;
             _config = config;
-
-            var bootstrapServers = _config["Kafka:BootstrapServers"];
-            var groupId = _config["Kafka:GroupId"];
-            var autoOffsetReset = _config["Kafka:AutoOffsetReset"] == "Latest"
-                ? AutoOffsetReset.Latest
-                : AutoOffsetReset.Earliest;
-            var maxPollIntervalMs = 300_000;
 
             var consumerConfig = new ConsumerConfig
             {
-                BootstrapServers = bootstrapServers,
-                GroupId = groupId,
-                AutoOffsetReset = autoOffsetReset,
-                MaxPollIntervalMs = maxPollIntervalMs,
-                EnableAutoCommit = true 
+                BootstrapServers = _config["Kafka:BootstrapServers"],
+                GroupId = _config["Kafka:GroupId"],
+                AutoOffsetReset = _config["Kafka:AutoOffsetReset"] == "Latest"
+                ? AutoOffsetReset.Latest
+                : AutoOffsetReset.Earliest,
+                MaxPollIntervalMs = 300_000,
+                EnableAutoCommit = false
             };
 
             _consumer = new ConsumerBuilder<Ignore, string>(consumerConfig).Build();

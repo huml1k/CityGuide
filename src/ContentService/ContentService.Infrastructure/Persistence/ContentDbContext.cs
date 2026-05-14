@@ -39,10 +39,10 @@ public class ContentDbContext : DbContext
             entity.Property(e => e.CreatedAt).HasColumnName("created_at").IsRequired();
 
             // Связь с Route (один маршрут — много аудиофайлов)
-            entity.HasOne<Route>()
-                  .WithMany()                    
-                  .HasForeignKey(e => e.RouteId)
-                  .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(x => x.Route)
+                .WithMany(x => x.AudioFiles)
+                .HasForeignKey(x => x.RouteId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasIndex(e => e.RouteId);
             entity.HasIndex(e => new { e.RouteId, e.OrderIndex }).IsUnique(); // порядок файлов в маршруте
@@ -88,10 +88,10 @@ public class ContentDbContext : DbContext
             entity.Property(e => e.OrderIndex).HasColumnName("order_index").IsRequired();
             entity.Property(e => e.CreatedAt).HasColumnName("created_at").IsRequired();
 
-            entity.HasOne<Route>()
-                  .WithMany()
-                  .HasForeignKey(e => e.RouteId)
-                  .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(x => x.Route)
+            .WithMany(x => x.RouteImages)
+            .HasForeignKey(x => x.RouteId)
+            .OnDelete(DeleteBehavior.Cascade);
         });
 
         // ==================== RoutePoint ====================
@@ -108,10 +108,10 @@ public class ContentDbContext : DbContext
             entity.Property(e => e.Title).HasColumnName("title").HasMaxLength(150);
             entity.Property(e => e.Description).HasColumnName("description").HasMaxLength(500);
 
-            entity.HasOne<Route>()
-                  .WithMany()
-                  .HasForeignKey(e => e.RouteId)
-                  .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(x => x.Route)
+            .WithMany(x => x.RoutePoints)
+            .HasForeignKey(x => x.RouteId)
+            .OnDelete(DeleteBehavior.Cascade);
         });
 
         // ==================== RouteReview ====================
@@ -127,10 +127,9 @@ public class ContentDbContext : DbContext
             entity.Property(e => e.Comment).HasColumnName("comment").HasMaxLength(1000);
             entity.Property(e => e.CreatedAt).HasColumnName("created_at").IsRequired();
 
-            entity.HasOne<Route>()
-                  .WithMany()
-                  .HasForeignKey(e => e.RouteId)
-                  .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(x => x.Route)
+                .WithMany(x => x.RouteReviews)
+                .HasForeignKey(x => x.RouteId);
 
             entity.HasIndex(e => new { e.RouteId, e.UserId }).IsUnique(); // один отзыв от пользователя на маршрут
         });
@@ -146,10 +145,14 @@ public class ContentDbContext : DbContext
             entity.Property(e => e.AverageRating).HasColumnName("average_rating").HasDefaultValue(0.0);
             entity.Property(e => e.ReviewsCount).HasColumnName("reviews_count").HasDefaultValue(0);
 
-            entity.HasOne<Route>()
-                  .WithOne()
-                  .HasForeignKey<RouteStats>(e => e.RouteId)
+            entity.HasOne(x => x.Route)
+                  .WithOne(x => x.RouteStats)
+                  .HasForeignKey<RouteStats>(x => x.RouteId)
                   .OnDelete(DeleteBehavior.Cascade);
+
+
+
+
         });
 
         // ==================== Tag ====================
@@ -173,15 +176,13 @@ public class ContentDbContext : DbContext
             entity.Property(e => e.RouteId).HasColumnName("route_id").IsRequired();
             entity.Property(e => e.TagId).HasColumnName("tag_id").IsRequired();
 
-            entity.HasOne<Route>()
-                  .WithMany()
-                  .HasForeignKey(e => e.RouteId)
-                  .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(x => x.Route)
+                .WithMany(x => x.RouteTags)
+                .HasForeignKey(x => x.RouteId);
 
-            entity.HasOne<Tag>()
-                  .WithMany()
-                  .HasForeignKey(e => e.TagId)
-                  .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(x => x.Tag)
+                .WithMany(x => x.RouteTags)
+                .HasForeignKey(x => x.TagId);
         });
 
         // ==================== UserAudioProgress ====================
@@ -198,9 +199,9 @@ public class ContentDbContext : DbContext
             entity.Property(e => e.UpdatedAt).HasColumnName("updated_at").IsRequired();
 
             // Связь с AudioFile
-            entity.HasOne<AudioFile>()
+            entity.HasOne(x => x.AudioFile)
                   .WithMany()
-                  .HasForeignKey(e => e.AudioFileId)
+                  .HasForeignKey(x => x.AudioFileId)
                   .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasIndex(e => new { e.UserId, e.AudioFileId }).IsUnique();

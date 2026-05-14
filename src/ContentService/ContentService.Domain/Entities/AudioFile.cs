@@ -33,5 +33,10 @@ namespace ContentService.Domain.Entities
 
         [Column("created_at")]
         public DateTime CreatedAt { get; set; }
+
+        public Route Route { get; set; } = null!;
+
+        public ICollection<UserAudioProgress> UserAudioProgresses { get; set; } 
+            = new List<UserAudioProgress>();
     }
 }
