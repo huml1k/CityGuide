@@ -29,7 +29,7 @@ builder.Services.Configure<ProducerConfig>(cfg =>
 builder.Services.AddSingleton(sp => sp.GetRequiredService<IOptions<ProducerConfig>>().Value);
 
 
-//builder.Services.AddSingleton<IDeadLetterQueueService, KafkaDlqService>();
+builder.Services.AddSingleton<IDeadLetterQueueService, KafkaDlqService>();
 builder.Services.AddSingleton<IEventNotificationFactory, EventNotificationFactory>();
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 
