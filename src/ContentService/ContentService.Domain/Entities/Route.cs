@@ -11,10 +11,10 @@ namespace ContentService.Domain.Entities
     {
         [Key]
         [Column("id")]
-        public long Id { get; set; }
+        public Guid Id { get; set; }
 
         [Column("creator_id")]
-        public long CreatorId { get; set; }
+        public Guid CreatorId { get; set; }
 
         [Column("title")]
         [MaxLength(200)]
@@ -64,6 +64,8 @@ namespace ContentService.Domain.Entities
 
         public ICollection<RouteReview> RouteReviews { get; set; }
             = new List<RouteReview>();
+
+        public RouteStats? RouteStats { get; set; }
 
     }
 }

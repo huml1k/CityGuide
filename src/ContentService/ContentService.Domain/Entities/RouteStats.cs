@@ -11,7 +11,7 @@ namespace ContentService.Domain.Entities
     {
         [Key]
         [Column("route_id")]
-        public long RouteId { get; set; }
+        public Guid RouteId { get; set; }
 
         [Column("favorites_count")]
         public int FavoritesCount { get; set; }
