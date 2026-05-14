@@ -53,14 +53,13 @@ public class NotificationDbContext : DbContext
             entity.HasIndex(e => e.NotificationId);
             entity.HasIndex(e => e.CreatedAt);
             entity.HasIndex(e => new { e.NotificationId, e.Status });
-        });
 
-        // ==================== Связи ====================
-
-        modelBuilder.Entity<NotificationLog>()
-            .HasOne<Notification>()
-            .WithMany()                    
+            entity.HasOne(x => x.Notification)
+            .WithMany()
             .HasForeignKey(e => e.NotificationId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        });
+
     }
 }

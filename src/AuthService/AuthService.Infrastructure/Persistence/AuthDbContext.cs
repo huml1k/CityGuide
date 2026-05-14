@@ -100,7 +100,7 @@ public class AuthDbContext : DbContext
                   .HasMaxLength(45);
 
             // Связь с User
-            entity.HasOne<User>()
+            entity.HasOne(x => x.User)
                   .WithMany()
                   .HasForeignKey(e => e.UserId)
                   .OnDelete(DeleteBehavior.Cascade); // или Restrict, в зависимости от политики
