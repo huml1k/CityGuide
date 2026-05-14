@@ -11,7 +11,7 @@ namespace UserService.Domain.Entities
     {
         [Key]
         [Column("user_id")]
-        public long UserId { get; set; }
+        public Guid UserId { get; set; }
 
         [Column("full_name")]
         [MaxLength(150)]
