@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using NotificationService.Application.Services;
 using NotificationService.Application.Services.Interface;
+using NotificationService.Infrastructure.Consumers;
 using NotificationService.Infrastructure.Persistence;
 using NotificationService.Infrastructure.Repository;
 using NotificationService.Infrastructure.Repository.Interface;
@@ -38,7 +39,7 @@ builder.Services.AddDbContext<NotificationDbContext>(options =>
     options.UseNpgsql(
         builder.Configuration.GetConnectionString("DefaultConnection")));
 
-//builder.Services.AddHostedService<PushNotificationKafkaConsumer>();
+builder.Services.AddHostedService<PushNotificationKafkaConsumer>();
 
 var app = builder.Build();
 

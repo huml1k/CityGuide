@@ -1,140 +1,159 @@
-﻿//using Confluent.Kafka;
-//using Mapster;
-//using Microsoft.Extensions.Configuration;
-//using Microsoft.Extensions.Hosting;
-//using Microsoft.Extensions.Logging;
-//using NotificationService.Application.DTOs;
-//using NotificationService.Domain.Entities;
-//using NotificationService.Infrastructure.Repository.Interface;
-//using System;
-//using System.Collections.Generic;
-//using System.Runtime.CompilerServices;
-//using System.Text;
-//using System.Text.Json;
+﻿using Confluent.Kafka;
+using Mapster;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using NotificationService.Application.DTOs;
+using NotificationService.Application.Services.Interface;
+using NotificationService.Domain.Entities;
+using NotificationService.Infrastructure.Repository.Interface;
+using NotificationService.Infrastructure.Services.Interface;
+using System;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Text.Json;
+using Microsoft.Extensions.Configuration;
 
-//namespace NotificationService.Infrastructure.Consumers
-//{
-//    public class PushNotificationKafkaConsumer : BackgroundService
-//    {
-//        private readonly IConsumer<string, string> _consumer;
-//        private readonly IConfiguration _config;
-//        private readonly ILogger<PushNotificationKafkaConsumer> _logger;
-//        private readonly INotificationRepository _repository;
-//        private readonly string _topic;
+namespace NotificationService.Infrastructure.Consumers
+{
+    public class PushNotificationKafkaConsumer : BackgroundService
+    {
+        private readonly IConsumer<string, string> _consumer;
+        private readonly INotificationRepository _repository;
+        private readonly IDeadLetterQueueService _dlqService;
+        private readonly IEventNotificationFactory _notificationFactory;
+        private readonly ILogger<PushNotificationKafkaConsumer> _logger;
+        private readonly string[] _topics;
+        private readonly JsonSerializerOptions _jsonOptions;
 
-//        public PushNotificationKafkaConsumer(
-//            IConfiguration config,
-//            ILogger<PushNotificationKafkaConsumer> logger,
-//            INotificationRepository repository)
-//        {
-//            _topic = config["Kafka:Topics:PushNotifications"] ?? "push-notifications";
-//            _logger = logger;
-//            _config = config;
-//            _repository = repository;
+        public PushNotificationKafkaConsumer(
+           ConsumerConfig config,
+            INotificationRepository repository,
+            IDeadLetterQueueService dlqService,
+            IEventNotificationFactory notificationFactory,
+            ILogger<PushNotificationKafkaConsumer> logger,
+            IConfiguration configuration)
+        {
+            _topics = configuration.GetSection("Kafka:SubscribedTopics")
+               .GetChildren()
+               .Select(c => c.Value)
+               .ToArray()
+           ?? new[] { "user.events", "content.events" };
 
-//            var consumerConfig = new ConsumerConfig
-//            {
-//                BootstrapServers = _config["Kafka:BootstrapServers"],
-//                GroupId = _config["Kafka:GroupId"],
-//                AutoOffsetReset = _config["Kafka:AutoOffsetReset"] == "Latest"
-//                ? AutoOffsetReset.Latest
-//                : AutoOffsetReset.Earliest,
-//                MaxPollIntervalMs = 300_000,
-//                EnableAutoCommit = false
-//            };
+            config.GroupId = "notification-service-consumer";
+            config.EnableAutoCommit = false;
+            config.AutoOffsetReset = AutoOffsetReset.Earliest;
+            config.BootstrapServers = config.BootstrapServers ?? "kafka:9092";
 
-//            _consumer = new ConsumerBuilder<string, string>(consumerConfig)
-//                .SetKeyDeserializer(Deserializers.Utf8)
-//                .SetValueDeserializer(Deserializers.Utf8)
-//                .SetErrorHandler((_, e) => logger.LogError("Ошибка Kafka: {Reason}", e.Reason))
-//                .Build();
-//        }
+            _consumer = new ConsumerBuilder<string, string>(config)
+                .SetKeyDeserializer(Deserializers.Utf8)
+                .SetValueDeserializer(Deserializers.Utf8)
+                .SetErrorHandler((_, e) => logger.LogError("Kafka Error: {Reason}", e.Reason))
+                .Build();
 
-//        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-//        {
-//            _consumer.Subscribe(_topic);
+            _repository = repository;
+            _dlqService = dlqService;
+            _notificationFactory = notificationFactory;
+            _logger = logger;
+            _jsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+        }
 
-//            while (!stoppingToken.IsCancellationRequested)
-//            {
-//                try
-//                {
-//                    var result = _consumer.Consume(stoppingToken);
-//                    if (result?.Message == null) continue;
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        {
+            _consumer.Subscribe(_topics);
+            _logger.LogInformation("Consumer started. Subscribed to topics: {Topics}", string.Join(", ", _topics));
 
-//                    await ProccessMessageAsync(result, stoppingToken);
-//                }
-//                catch (OperationCanceledException)
-//                {
-//                    break;
-//                }
-//                catch (ConsumeException e)
-//                {
-//                    _logger.LogError(e, "Kafka consume Ошибка: {Error}", e.Error.Reason);
-//                    await Task.Delay(1000, stoppingToken);
-//                }
-//                catch (Exception e)
-//                {
-//                    _logger.LogError(e, "Неопознаная ошибка в consumer loop");
-//                    await Task.Delay(1000, stoppingToken);
-//                }
+            while (!stoppingToken.IsCancellationRequested)
+            {
+                try
+                {
+                    var result = _consumer.Consume(stoppingToken);
+                    if (result?.Message == null) continue;
 
-//            }
-//        }
+                    await ProcessMessageAsync(result, stoppingToken);
+                }
+                catch (OperationCanceledException)
+                {
+                    break;
+                }
+                catch (ConsumeException e)
+                {
+                    _logger.LogError(e, "Kafka consume error: {Error}", e.Error.Reason);
+                    await Task.Delay(1000, stoppingToken);
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError(e, "Unexpected error in consumer loop");
+                    await Task.Delay(1000, stoppingToken);
+                }
+            }
+        }
 
-//        private async Task ProccessMessageAsync(ConsumeResult<string, string> result, CancellationToken ct)
-//        {
-//            var value = result.Message.Value;
-//            var offset = result.TopicPartitionOffset;
+        private async Task ProcessMessageAsync(ConsumeResult<string, string> result, CancellationToken ct)
+        {
+            var value = result.Message.Value;
+            var offset = result.TopicPartitionOffset;
+            var topic = result.Topic;
 
-//            try
-//            {
-//                var dto = JsonSerializer.Deserialize<KafkaPushNotificationDto>(value, new JsonSerializerOptions
-//                {
-//                    PropertyNameCaseInsensitive = true
-//                });
+            try
+            {
+                var notification = topic switch
+                {
+                    var t when t.StartsWith("user") => ParseUserEvent(value),
+                    var t when t.StartsWith("content") => ParseContentEvent(value),
+                    _ => null
+                };
 
-//                if (dto == null)
-//                {
-//                    _logger.LogError("Не удалось десериализовать по offset {Offset}", offset);
-//                    //await _dlqService.SendToDlqAsync(value, "Deserialization failed", ct);
-//                    _consumer.Commit(result);
-//                    return;
-//                }
+                if (notification == null)
+                {
+                    _logger.LogWarning("Unknown topic or invalid event type: {Topic}", topic);
+                    await _dlqService.SendToDlqAsync(value, $"Unknown topic or invalid event type: {topic}", ct);
+                    _consumer.Commit(result);
+                    return;
+                }
 
-//                var notification = dto.Adapt<Notification>();
+                await _repository.AddAsync(notification, ct);
+                await _repository.AddLogAsync(new NotificationLog
+                {
+                    Id = Guid.NewGuid(),
+                    NotificationId = notification.Id,
+                    Provider = "Kafka",
+                    Status = "Received",
+                    ErrorMessage = null,
+                    CreatedAt = DateTime.UtcNow
+                }, ct);
 
-//                await _repository.AddAsync(notification, ct);
+                await _repository.SaveChangesAsync(ct);
+                _consumer.Commit(result);
 
-//                var log = new NotificationLog
-//                {
-//                    Id = Guid.NewGuid(),
-//                    NotificationId = notification.Id,
-//                    Provider = "Kafka",
-//                    Status = "Received",
-//                    ErrorMessage = null,
-//                    CreatedAt = DateTime.UtcNow
-//                };
-//                await _repository.AddLogAsync(log, ct);
+                _logger.LogInformation("Notification saved. UserId: {UserId}, Type: {Type}", notification.UserId, notification.Type);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to process message at offset {Offset}", offset);
+                await _dlqService.SendToDlqAsync(value, ex.Message, ct);
+                _consumer.Commit(result);
+            }
+        }
 
-//                await _repository.SaveChangesAsync(ct);
+        private Notification? ParseUserEvent(string value)
+        {
+            var dto = JsonSerializer.Deserialize<UserEventDto>(value, _jsonOptions);
+            return dto == null ? null : _notificationFactory.CreateFromUserEvent(dto);
+        }
 
-//                _consumer.Commit(result);
-//                _logger.LogInformation("Уведомление успешно сохранено. UserId: {UserId}, Id: {Id}",
-//                    notification.UserId, notification.Id);
-//            }
-//            catch (Exception e)
-//            {
-//                _logger.LogError(e, "Ошибка обработки сообщении в offset {Offset}", offset);
+        private Notification? ParseContentEvent(string value)
+        {
+            var dto = JsonSerializer.Deserialize<ContentEventDto>(value, _jsonOptions);
+            return dto == null ? null : _notificationFactory.CreateFromContentEvent(dto);
+        }
 
-//                _consumer.Commit(result);
-//            }
-//        }
-
-//        public override async Task StopAsync(CancellationToken cancellationToken)
-//        {
-//            _logger.LogInformation("Остановка consumer");
-//            _consumer.Close();
-//            await base.StopAsync(cancellationToken);
-//        }
-//    }
-//}
+        public override async Task StopAsync(CancellationToken cancellationToken)
+        {
+            _logger.LogInformation("Остановка consumer");
+            _consumer.Close();
+            await base.StopAsync(cancellationToken);
+        }
+    }
+}
