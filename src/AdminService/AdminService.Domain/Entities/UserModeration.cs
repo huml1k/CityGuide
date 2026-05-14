@@ -8,10 +8,10 @@ namespace AdminService.Domain.Entities
     {
         [Key]
         [Column("id")]
-        public long Id { get; set; }
+        public Guid Id { get; set; }
 
         [Column("user_id")]
-        public int UserId { get; set; }
+        public Guid UserId { get; set; }
 
         [Column("action")]
         [MaxLength(50)]

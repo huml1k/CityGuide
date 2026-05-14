@@ -11,13 +11,13 @@ namespace ContentService.Domain.Entities
     {
         [Key]
         [Column("id")]
-        public long Id { get; set; }
+        public Guid Id { get; set; }
 
         [Column("user_id")]
-        public long UserId { get; set; }
+        public Guid UserId { get; set; }
 
         [Column("audio_file_id")]
-        public long AudioFileId { get; set; }
+        public Guid AudioFileId { get; set; }
 
         [Column("progress_seconds")]
         public int ProgressSeconds { get; set; } = 0;
@@ -27,5 +27,7 @@ namespace ContentService.Domain.Entities
 
         [Column("updated_at")]
         public DateTime UpdatedAt { get; set; }
+
+        public AudioFile AudioFile { get; set; } = null!;
     }
 }

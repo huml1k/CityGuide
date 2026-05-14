@@ -24,4 +24,9 @@
     <ProjectReference Include="..\ContentService.Infrastructure\ContentService.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Contracts\Requests\" />
+    <Folder Include="Contracts\Responses\" />
+  </ItemGroup>
+
 </Project>

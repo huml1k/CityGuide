@@ -34,5 +34,7 @@ namespace NotificationService.Domain.Entities
         [Column("created_at")]
         public DateTime CreatedAt { get; set; }
 
+        public Notification Notification { get; set; }
+
     }
 }

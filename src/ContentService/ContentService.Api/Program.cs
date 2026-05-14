@@ -21,12 +21,12 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<ContentDbContext>();
+//using (var scope = app.Services.CreateScope())
+//{
+//    var db = scope.ServiceProvider.GetRequiredService<ContentDbContext>();
 
-    db.Database.Migrate();
-}
+//    db.Database.Migrate();
+//}
 
 app.UseAuthorization();
 app.MapControllers();

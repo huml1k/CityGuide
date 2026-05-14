@@ -32,7 +32,7 @@ namespace NotificationService.Infrastructure.Repository
             return await _context.Notifications.FindAsync([id], cancellationToken: ct);
         }
 
-        public async Task<IEnumerable<Notification>> GetUnreadAsync(int userId, CancellationToken ct)
+        public async Task<IEnumerable<Notification>> GetUnreadAsync(Guid userId, CancellationToken ct)
         {
             return await _context.Notifications
             .Where(n => n.UserId == userId && !n.IsRead)
@@ -41,7 +41,7 @@ namespace NotificationService.Infrastructure.Repository
             .ToListAsync(cancellationToken: ct);
         }
 
-        public async Task MarkAllAsReadAsync(int userId, CancellationToken ct)
+        public async Task MarkAllAsReadAsync(Guid userId, CancellationToken ct)
         {
             await _context.Notifications
             .Where(n => n.UserId == userId && !n.IsRead)

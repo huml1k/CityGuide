@@ -11,10 +11,10 @@ namespace ContentService.Domain.Entities
     {
         [Key]
         [Column("id")]
-        public long Id { get; set; }
+        public Guid Id { get; set; }
 
         [Column("route_id")]
-        public long RouteId { get; set; }
+        public Guid RouteId { get; set; }
 
         [Column("latitude")]
         public double Latitude { get; set; }
@@ -33,5 +33,6 @@ namespace ContentService.Domain.Entities
         [MaxLength(500)]
         public string? Description { get; set; }
 
+        public Route Route { get; set; } = null!;
     }
 }

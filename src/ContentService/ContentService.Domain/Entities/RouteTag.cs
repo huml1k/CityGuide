@@ -9,10 +9,13 @@ namespace ContentService.Domain.Entities
     public class RouteTag
     {
         [Column("route_id")]
-        public long RouteId { get; set; }
+        public Guid RouteId { get; set; }
 
         [Column("tag_id")]
-        public long TagId { get; set; }
+        public Guid TagId { get; set; }
 
+        public Route Route { get; set; } = null!;
+
+        public Tag Tag { get; set; } = null!;
     }
 }

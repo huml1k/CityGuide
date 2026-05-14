@@ -11,10 +11,10 @@ namespace ContentService.Domain.Entities
     {
         [Key]
         [Column("id")]
-        public long Id { get; set; }
+        public Guid Id { get; set; }
 
         [Column("route_id")]
-        public long RouteId { get; set; }
+        public Guid RouteId { get; set; }
 
         
         [Column("file_extension")]
@@ -30,5 +30,7 @@ namespace ContentService.Domain.Entities
 
         [Column("created_at")]
         public DateTime CreatedAt { get; set; }
+
+        public Route Route { get; set; } = null!;
     }
 }

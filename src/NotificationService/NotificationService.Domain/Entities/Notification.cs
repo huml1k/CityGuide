@@ -15,7 +15,7 @@ namespace NotificationService.Domain.Entities
         public Guid Id { get; set; }
 
         [Column("user_id")]
-        public int UserId { get; set; }
+        public Guid UserId { get; set; }
 
         [Required]
         [Column("type")]
