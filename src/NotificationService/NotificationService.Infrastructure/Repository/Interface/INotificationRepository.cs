@@ -10,9 +10,9 @@ namespace NotificationService.Infrastructure.Repository.Interface
         Task AddAsync(Notification notification, CancellationToken ct);
         Task AddLogAsync(NotificationLog log, CancellationToken ct);
         Task SaveChangesAsync(CancellationToken ct);
-        Task<IEnumerable<Notification>> GetUnreadAsync(int userId, CancellationToken ct);
+        Task<IEnumerable<Notification>> GetUnreadAsync(Guid userId, CancellationToken ct);
         Task<Notification?> GetByIdAsync(Guid id, CancellationToken ct);
         Task UpdateAsync(Notification notification, CancellationToken ct);
-        Task MarkAllAsReadAsync(int userId, CancellationToken ct);
+        Task MarkAllAsReadAsync(Guid userId, CancellationToken ct);
     }
 }
