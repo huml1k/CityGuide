@@ -1,8 +1,13 @@
+using Confluent.Kafka;
 using Microsoft.EntityFrameworkCore;
-using NotificationService.Infrastructure.Consumers;
+using Microsoft.Extensions.Options;
+using NotificationService.Application.Services;
+using NotificationService.Application.Services.Interface;
 using NotificationService.Infrastructure.Persistence;
 using NotificationService.Infrastructure.Repository;
 using NotificationService.Infrastructure.Repository.Interface;
+using NotificationService.Infrastructure.Services;
+using NotificationService.Infrastructure.Services.Interface;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +16,21 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.Configure<ConsumerConfig>(cfg =>
+{
+    cfg.BootstrapServers = builder.Configuration["Kafka:BootstrapServers"] ?? "kafka:9092";
+});
+builder.Services.AddSingleton(sp => sp.GetRequiredService<IOptions<ConsumerConfig>>().Value);
+
+builder.Services.Configure<ProducerConfig>(cfg =>
+{
+    cfg.BootstrapServers = builder.Configuration["Kafka:BootstrapServers"] ?? "kafka:9092";
+});
+builder.Services.AddSingleton(sp => sp.GetRequiredService<IOptions<ProducerConfig>>().Value);
+
+
+//builder.Services.AddSingleton<IDeadLetterQueueService, KafkaDlqService>();
+builder.Services.AddSingleton<IEventNotificationFactory, EventNotificationFactory>();
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 
 // === EF Core ===

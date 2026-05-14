@@ -7,7 +7,7 @@ using System.Text;
 
 namespace NotificationService.Infrastructure.Services
 {
-    public class KafkaDlqService 
+    public class KafkaDlqService  
     {
         private readonly IProducer<string, string> _producer;
         private readonly string _dlqTopic;
