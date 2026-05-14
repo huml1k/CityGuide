@@ -11,7 +11,7 @@ namespace ContentService.Domain.Entities
     {
         [Key]
         [Column("id")]
-        public long Id { get; set; }
+        public Guid Id { get; set; }
 
         [Column("name")]
         [MaxLength(100)]

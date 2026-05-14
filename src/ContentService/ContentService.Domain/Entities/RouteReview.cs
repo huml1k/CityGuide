@@ -11,13 +11,13 @@ namespace ContentService.Domain.Entities
     {
         [Key]
         [Column("id")]
-        public long Id { get; set; }
+        public Guid Id { get; set; }
 
         [Column("user_id")]
-        public long UserId { get; set; }
+        public Guid UserId { get; set; }
 
         [Column("route_id")]
-        public long RouteId { get; set; }
+        public Guid RouteId { get; set; }
 
         [Column("rating")]
         [Range(1, 5)]
