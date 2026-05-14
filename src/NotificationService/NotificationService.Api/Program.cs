@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using NotificationService.Infrastructure.Kafka;
+using NotificationService.Infrastructure.Consumers;
 using NotificationService.Infrastructure.Persistence;
 using NotificationService.Infrastructure.Repository;
 using NotificationService.Infrastructure.Repository.Interface;
