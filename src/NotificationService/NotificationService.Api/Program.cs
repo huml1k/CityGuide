@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using NotificationService.Infrastructure.Kafka;
 using NotificationService.Infrastructure.Persistence;
+using NotificationService.Infrastructure.Repository;
+using NotificationService.Infrastructure.Repository.Interface;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,6 +10,8 @@ builder.Services.AddControllers();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 
 // === EF Core ===
 builder.Services.AddDbContext<NotificationDbContext>(options =>
@@ -33,12 +37,5 @@ using (var scope = app.Services.CreateScope())
 
 app.UseAuthorization();
 app.MapControllers();
-
-app.MapGet("/api/notifications/health", () => new
-{
-    service = "NotifactionsService",
-    status = "Healthy",
-    timestamp = DateTime.UtcNow
-});
 
 app.Run();
