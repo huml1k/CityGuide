@@ -14,5 +14,8 @@ namespace ContentService.Domain.Entities
         [Column("tag_id")]
         public long TagId { get; set; }
 
+        public Route Route { get; set; } = null!;
+
+        public Tag Tag { get; set; } = null!;
     }
 }

@@ -50,5 +50,20 @@ namespace ContentService.Domain.Entities
         [Column("updated_at")]
         public DateTime? UpdatedAt { get; set; }
 
+        public ICollection<RoutePoint> RoutePoints { get; set; }
+            = new List<RoutePoint>();
+
+        public ICollection<RouteImage> RouteImages { get; set; }
+            = new List<RouteImage>();
+
+        public ICollection<AudioFile> AudioFiles { get; set; }
+            = new List<AudioFile>();
+
+        public ICollection<RouteTag> RouteTags { get; set; }
+            = new List<RouteTag>();
+
+        public ICollection<RouteReview> RouteReviews { get; set; }
+            = new List<RouteReview>();
+
     }
 }

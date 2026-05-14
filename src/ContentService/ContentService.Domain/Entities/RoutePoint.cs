@@ -33,5 +33,6 @@ namespace ContentService.Domain.Entities
         [MaxLength(500)]
         public string? Description { get; set; }
 
+        public Route Route { get; set; } = null!;
     }
 }

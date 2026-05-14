@@ -27,5 +27,7 @@ namespace ContentService.Domain.Entities
 
         [Column("updated_at")]
         public DateTime UpdatedAt { get; set; }
+
+        public AudioFile AudioFile { get; set; } = null!;
     }
 }

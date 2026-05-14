@@ -17,5 +17,8 @@ namespace ContentService.Domain.Entities
         [MaxLength(100)]
         [Required]
         public string Name { get; set; } = string.Empty;
+
+        public ICollection<RouteTag> RouteTags { get; set; }
+            = new List<RouteTag>();
     }
 }
