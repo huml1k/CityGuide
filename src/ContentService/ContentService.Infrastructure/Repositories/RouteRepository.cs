@@ -69,7 +69,7 @@ namespace ContentService.Infrastructure.Repositories
 
         void IRouteRepository.Update(Route route)
         {
-            throw new NotImplementedException();
+            _context.Routes.Update(route);
         }
     }
 }
