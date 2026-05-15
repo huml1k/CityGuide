@@ -1,41 +1,62 @@
+using Confluent.Kafka;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using NotificationService.Application.Services;
+using NotificationService.Application.Services.Interface;
+using NotificationService.Infrastructure.Consumers;
+using NotificationService.Infrastructure.Persistence;
+using NotificationService.Infrastructure.Repository;
+using NotificationService.Infrastructure.Repository.Interface;
+using NotificationService.Infrastructure.Services;
+using NotificationService.Infrastructure.Services.Interface;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+builder.Services.AddControllers();
+
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+builder.Services.Configure<ConsumerConfig>(cfg =>
+{
+    cfg.BootstrapServers = builder.Configuration["Kafka:BootstrapServers"] ?? "kafka:9092";
+});
+builder.Services.AddSingleton(sp => sp.GetRequiredService<IOptions<ConsumerConfig>>().Value);
+
+builder.Services.Configure<ProducerConfig>(cfg =>
+{
+    cfg.BootstrapServers = builder.Configuration["Kafka:BootstrapServers"] ?? "kafka:9092";
+});
+builder.Services.AddSingleton(sp => sp.GetRequiredService<IOptions<ProducerConfig>>().Value);
+
+
+builder.Services.AddSingleton<IDeadLetterQueueService, KafkaDlqService>();
+builder.Services.AddSingleton<IEventNotificationFactory, EventNotificationFactory>();
+builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+
+// === EF Core ===
+builder.Services.AddDbContext<NotificationDbContext>(options =>
+    options.UseNpgsql(
+        builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddHostedService<PushNotificationKafkaConsumer>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+//using (var scope = app.Services.CreateScope())
+//{
+//    var db = scope.ServiceProvider.GetRequiredService<NotificationDbContext>();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+//    db.Database.Migrate();
+//}
 
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
+app.UseAuthorization();
+app.MapControllers();
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
