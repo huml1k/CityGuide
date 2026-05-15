@@ -8,7 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace ContentService.Infrastructure.DependencyInjection
+namespace ContentService.Infrastructure
 {
     public static class DependencyInjection
     {
