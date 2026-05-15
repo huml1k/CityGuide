@@ -1,17 +1,39 @@
-using Microsoft.EntityFrameworkCore;
+using System.Text;
+using AuthService.Application;
+using AuthService.Application.Models;
+using AuthService.Infrastructure;
 using AuthService.Infrastructure.Persistence;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
+builder.Services.AddOpenApi();
+builder.Services.AddApplication();
+builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddAuthorization();
 
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+var authOptions = builder.Configuration.GetSection(AuthOptions.SectionName).Get<AuthOptions>()
+                 ?? throw new InvalidOperationException("Auth options are missing.");
+var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(authOptions.JwtSecret));
 
-// === EF Core ===
-builder.Services.AddDbContext<AuthDbContext>(options =>
-    options.UseNpgsql(
-        builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = authOptions.JwtIssuer,
+            ValidateAudience = true,
+            ValidAudience = authOptions.JwtAudience,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = signingKey,
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.Zero
+        };
+    });
 
 var app = builder.Build();
 
@@ -21,13 +43,13 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-//using (var scope = app.Services.CreateScope())
-//{
-//    var db = scope.ServiceProvider.GetRequiredService<AuthDbContext>();
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<AuthDbContext>();
+    await dbContext.Database.EnsureCreatedAsync();
+}
 
-//    db.Database.Migrate();
-//}
-
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 

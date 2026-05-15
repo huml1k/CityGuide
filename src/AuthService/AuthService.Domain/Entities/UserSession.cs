@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Text;
 
 namespace AuthService.Domain.Entities
 {
@@ -20,7 +17,7 @@ namespace AuthService.Domain.Entities
         [Required]
         [Column("refresh_token_hash")]
         [MaxLength(255)]
-        public string RefreshTokenHash { get; set; }
+        public string RefreshTokenHash { get; set; } = string.Empty;
 
         [Required]
         [Column("expires_at")]
@@ -33,17 +30,13 @@ namespace AuthService.Domain.Entities
         [Column("revoked_at")]
         public DateTime? RevokedAt { get; set; }
 
-        //опционально 
-
         [MaxLength(255)]
         [Column("user_agent")]
-        public string UserAgent { get; set; }
+        public string? UserAgent { get; set; }
 
         [MaxLength(45)]
         [Column("ip_address")]
-        public string IpAddress { get; set; }
-
-        public User User { get; set; }
+        public string? IpAddress { get; set; }
 
     }
 }
