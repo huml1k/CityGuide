@@ -1,8 +1,10 @@
 ﻿using ContentService.Domain.Entities;
 using ContentService.Domain.Interfaces.Repositories;
 using ContentService.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Text;
 
 namespace ContentService.Infrastructure.Repositories
@@ -16,49 +18,49 @@ namespace ContentService.Infrastructure.Repositories
             _context = context;
         }
 
-        public Task AddAsync(RouteReview review, CancellationToken cancellationToken = default)
+        public async Task AddAsync(RouteReview review, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            await _context.RouteReviews.AddAsync(review, cancellationToken);
         }
 
         public void Delete(RouteReview review)
         {
-            throw new NotImplementedException();
+            _context.RouteReviews.Remove(review);
         }
 
-        public Task<bool> ExistsAsync(Guid routeId, Guid userId, CancellationToken cancellationToken = default)
+        public async Task<bool> ExistsAsync(Guid routeId, Guid userId, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            return await _context.RouteReviews.AnyAsync(x => x.RouteId == routeId && x.UserId == userId,cancellationToken); 
         }
 
-        public Task<double> GetAverageRatingAsync(Guid routeId, CancellationToken cancellationToken = default)
+        public async Task<double> GetAverageRatingAsync(Guid routeId, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            return await _context.RouteReviews.Where(x => x.RouteId == routeId).AverageAsync(x => x.Rating, cancellationToken);
         }
 
-        public Task<RouteReview?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+        public async Task<RouteReview?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            return await _context.RouteReviews.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
         }
 
-        public Task<IReadOnlyCollection<RouteReview>> GetByRouteIdAsync(Guid routeId, CancellationToken cancellationToken = default)
+        public async Task<IReadOnlyCollection<RouteReview>> GetByRouteIdAsync(Guid routeId, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            return await _context.RouteReviews.Where(x => x.RouteId == routeId).ToListAsync(cancellationToken);
         }
 
-        public Task<int> GetReviewsCountAsync(Guid routeId, CancellationToken cancellationToken = default)
+        public async Task<int> GetReviewsCountAsync(Guid routeId, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            return await _context.RouteReviews.CountAsync(x => x.RouteId == routeId, cancellationToken);
         }
 
-        public Task<RouteReview?> GetUserReviewAsync(Guid routeId, Guid userId, CancellationToken cancellationToken = default)
+        public async Task<RouteReview?> GetUserReviewAsync(Guid routeId, Guid userId, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            return await _context.RouteReviews.FirstOrDefaultAsync(x => x.UserId == userId && x.RouteId == routeId, cancellationToken); 
         }
 
         public void Update(RouteReview review)
         {
-            throw new NotImplementedException();
+            _context.RouteReviews.Update(review);
         }
     }
 }

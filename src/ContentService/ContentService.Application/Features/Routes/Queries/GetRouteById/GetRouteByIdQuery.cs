@@ -1,10 +1,12 @@
-﻿using System;
+﻿using MediatR;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace ContentService.Application.Features.Routes.Queries.GetRouteById
 {
-    internal class GetRouteByIdQuery
+    public class GetRouteByIdQuery : IRequest<GetRouteByIdResponse>
     {
+        public Guid RouteId { get; set; }
     }
 }

@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using ContentService.Infrastructure.Persistence;
+using ContentService.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,10 +9,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// === EF Core ===
-builder.Services.AddDbContext<ContentDbContext>(options =>
-    options.UseNpgsql(
-        builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddInfrastructure(builder.Configuration);
 
 var app = builder.Build();
 
