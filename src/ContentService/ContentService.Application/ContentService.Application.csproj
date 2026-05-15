@@ -5,7 +5,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Features\Routes\DTOs\" />
     <Folder Include="Features\Statistics\" />
     <Folder Include="Features\AudioProgress\" />
   </ItemGroup>
