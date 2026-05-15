@@ -4,7 +4,10 @@ using System.Text;
 
 namespace ContentService.Application.Features.Routes.Commands.UpdateRoute
 {
-    internal class UpdateRouteResponse
+    public class UpdateRouteResponse
     {
+        public Guid Id { get; set; }
+
+        public DateTime? UpdatedAt { get; set; }
     }
 }
