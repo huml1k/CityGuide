@@ -1,4 +1,5 @@
 ﻿using ContentService.Domain.Interfaces.Repositories;
+using ContentService.Infrastructure.Extensions;
 using ContentService.Infrastructure.Persistence;
 using ContentService.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -29,6 +30,7 @@ namespace ContentService.Infrastructure
             //Redis
             //MinIO
             //Kafka
+            services.AddKafkaProducer(configuration);
 
             return services;
         }
