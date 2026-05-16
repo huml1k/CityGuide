@@ -1,83 +1,95 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using ContentService.Application.Features.Routes.Commands.CreateRoute;
+using ContentService.Application.Features.Routes.Commands.DeleteRoute;
+using ContentService.Application.Features.Routes.Commands.UpdateRoute;
+using ContentService.Application.Features.Routes.Queries.GetRouteById;
+using ContentService.Application.Features.Routes.Queries.GetRoutes;
+using ContentService.Application.Features.Routes.Queries.SearchRoutes;
+using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace ContentService.Api.Controllers
 {
+    [ApiController]
+    [Route("api/routes")]
     public class RoutesController : Controller
     {
-        // GET: RoutesController
-        public ActionResult Index()
+        private IMediator _mediator;
+
+        public RoutesController(IMediator mediator)
         {
-            return View();
+            _mediator = mediator;
         }
 
-        // GET: RoutesController/Details/5
-        public ActionResult Details(int id)
-        {
-            return View();
-        }
+        //create
 
-        // GET: RoutesController/Create
-        public ActionResult Create()
-        {
-            return View();
-        }
-
-        // POST: RoutesController/Create
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
+        public async Task<IActionResult> Create([FromBody] CreateRouteCommand command, CancellationToken cancellationToken)
         {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
+            var result = await _mediator.Send(command, cancellationToken);
+
+            return Ok(result);
         }
 
-        // GET: RoutesController/Edit/5
-        public ActionResult Edit(int id)
+        //update
+        [HttpPut("{id:guid}")]
+        public async Task<IActionResult> Update(Guid id, [FromBody] UpdateRouteCommand command, CancellationToken cancellationToken)
         {
-            return View();
+            command.RouteId = id;
+
+            var result = await _mediator.Send(command, cancellationToken);
+
+            return Ok(result);
         }
 
-        // POST: RoutesController/Edit/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
+        //delete
+        [HttpDelete("{id:guid}")]
+        public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
         {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
+            var command = new DeleteRouteCommand { RouteId = id };
+
+            await _mediator.Send(command, cancellationToken);
+
+            return NoContent();
         }
 
-        // GET: RoutesController/Delete/5
-        public ActionResult Delete(int id)
+        //get by id
+        [HttpGet("{id:guid}")]
+        public async Task<IActionResult> GetById (Guid id, CancellationToken cancellationToken)
         {
-            return View();
+            var query = new GetRouteByIdQuery { RouteId = id };
+
+            var result = await _mediator.Send(query, cancellationToken);
+
+            return Ok(result);
         }
 
-        // POST: RoutesController/Delete/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
+        //get all
+        [HttpGet]
+        public async Task<IActionResult> GetAll (CancellationToken cancellationToken)
         {
-            try
+            var query = new GetRoutesQuery();
+
+            var result = await _mediator.Send(query, cancellationToken);
+
+            return Ok(result);
+        }
+
+        //search
+        [HttpGet("search")]
+        public async Task<IActionResult> Search([FromQuery] string search,CancellationToken cancellationToken)
+        {
+            var query = new SearchRoutesQuery
             {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
+                Search = search
+            };
+
+            var result = await _mediator.Send(
+                query,
+                cancellationToken);
+
+            return Ok(result);
         }
     }
 }

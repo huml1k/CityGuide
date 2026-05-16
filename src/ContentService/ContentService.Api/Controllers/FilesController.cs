@@ -1,83 +1,93 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using ContentService.Application.Features.Files.Commands.DeleteAudioFile;
+using ContentService.Application.Features.Files.Commands.DeleteRouteImage;
+using ContentService.Application.Features.Files.Commands.UploadAudioFile;
+using ContentService.Application.Features.Files.Commands.UploadRouteImage;
+using ContentService.Application.Features.Files.Queries.GetAudioFile;
+using ContentService.Application.Features.Files.Queries.GetRouteImage;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ContentService.Api.Controllers
 {
+    [ApiController]
+    [Route("api/files")]
     public class FilesController : Controller
     {
-        // GET: FilesController
-        public ActionResult Index()
+        private readonly IMediator _mediator;
+
+        public FilesController(IMediator mediator)
         {
-            return View();
+            _mediator = mediator;
         }
 
-        // GET: FilesController/Details/5
-        public ActionResult Details(int id)
+        // upload image
+
+        [HttpPost("images")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> UploadImage([FromForm] UploadRouteImageCommand command, CancellationToken cancellationToken)
         {
-            return View();
+            var result = await _mediator.Send(command, cancellationToken);
+
+            return Ok(result);
         }
 
-        // GET: FilesController/Create
-        public ActionResult Create()
+        // upload audio
+
+        [HttpPost("audio")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> UploadAudio([FromForm] UploadAudioFileCommand command, CancellationToken cancellationToken)
         {
-            return View();
+            var result = await _mediator.Send(command, cancellationToken);
+
+            return Ok(result);
         }
 
-        // POST: FilesController/Create
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
+        // delete image
+
+        [HttpDelete("images/{id:guid}")]
+        public async Task<IActionResult> DeleteImage(Guid id, CancellationToken cancellationToken)
         {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
+            var command = new DeleteRouteImageCommand { ImageId = id };
+
+            await _mediator.Send(command, cancellationToken);
+
+            return NoContent();
         }
 
-        // GET: FilesController/Edit/5
-        public ActionResult Edit(int id)
+        // delete audio
+
+        [HttpDelete("audio/{id:guid}")]
+        public async Task<IActionResult> DeleteAudio(Guid id, CancellationToken cancellationToken)
         {
-            return View();
+            var command = new DeleteAudioFileCommand { AudioFileId = id };
+
+            await _mediator.Send(command, cancellationToken);
+
+            return NoContent();
         }
 
-        // POST: FilesController/Edit/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
+        // get image
+
+        [HttpGet("images/{id:guid}")]
+        public async Task<IActionResult> GetImage(Guid id, CancellationToken cancellationToken)
         {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
+            var query = new GetRouteImageQuery { ImageId = id };
+
+            var result = await _mediator.Send(query, cancellationToken);
+
+            return File(result.Stream, result.ContentType, result.FileName);
         }
 
-        // GET: FilesController/Delete/5
-        public ActionResult Delete(int id)
-        {
-            return View();
-        }
+        // get audio
 
-        // POST: FilesController/Delete/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
+        [HttpGet("audio/{id:guid}")]
+        public async Task<IActionResult> GetAudio(Guid id, CancellationToken cancellationToken)
         {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
+            var query = new GetAudioFileQuery { AudioFileId = id };
+
+            var result = await _mediator.Send(query, cancellationToken);
+
+            return File(result.Stream, result.ContentType, result.FileName);
         }
     }
 }
