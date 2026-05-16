@@ -29,7 +29,7 @@ namespace ContentService.Infrastructure
 
             //Redis
             //MinIO
-            //Kafka
+
             services.AddKafkaProducer(configuration);
 
             return services;
