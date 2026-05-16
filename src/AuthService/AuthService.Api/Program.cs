@@ -45,8 +45,10 @@ if (app.Environment.IsDevelopment())
 
 using (var scope = app.Services.CreateScope())
 {
-    var dbContext = scope.ServiceProvider.GetRequiredService<AuthDbContext>();
-    await dbContext.Database.EnsureCreatedAsync();
+    var authDbContext = scope.ServiceProvider.GetRequiredService<AuthDbContext>();
+    var userDbContext = scope.ServiceProvider.GetRequiredService<UserDbContext>();
+    await authDbContext.Database.EnsureCreatedAsync();
+    await userDbContext.Database.EnsureCreatedAsync();
 }
 
 app.UseAuthentication();
