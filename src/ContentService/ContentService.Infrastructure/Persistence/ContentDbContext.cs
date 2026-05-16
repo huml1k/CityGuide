@@ -57,16 +57,12 @@ public class ContentDbContext : DbContext
             entity.Property(e => e.Title).HasColumnName("title").HasMaxLength(200).IsRequired();
             entity.Property(e => e.Description).HasColumnName("description").HasMaxLength(2000);
             entity.Property(e => e.DurationMinutes).HasColumnName("duration_minutes").IsRequired();
-            entity.Property(e => e.Price).HasColumnName("price").HasColumnType("decimal(18,2)").IsRequired();
-            entity.Property(e => e.Status).HasColumnName("status").HasMaxLength(50).HasDefaultValue("draft").IsRequired();
             entity.Property(e => e.GoogleMapsUrl).HasColumnName("google_maps_url").HasMaxLength(500);
-            entity.Property(e => e.Version).HasColumnName("version").HasDefaultValue(1).IsRequired();
             entity.Property(e => e.CreatedAt).HasColumnName("created_at").IsRequired();
             entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
             entity.Property(e => e.DeletedAt).HasColumnName("deleted_at");
 
             entity.HasIndex(e => e.CreatorId);
-            entity.HasIndex(e => e.Status);
             entity.HasIndex(e => e.DeletedAt);
 
             // Soft Delete
@@ -121,9 +117,6 @@ public class ContentDbContext : DbContext
 
             entity.Property(e => e.RouteId).HasColumnName("route_id");
             entity.Property(e => e.FavoritesCount).HasColumnName("favorites_count").HasDefaultValue(0);
-            entity.Property(e => e.AverageRating).HasColumnName("average_rating").HasDefaultValue(0.0);
-            entity.Property(e => e.ReviewsCount).HasColumnName("reviews_count").HasDefaultValue(0);
-
             entity.HasOne(x => x.Route)
                   .WithOne(x => x.RouteStats)
                   .HasForeignKey<RouteStats>(x => x.RouteId)

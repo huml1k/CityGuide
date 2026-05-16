@@ -16,12 +16,6 @@ namespace ContentService.Domain.Entities
         [Column("favorites_count")]
         public int FavoritesCount { get; set; }
 
-        [Column("average_rating")]
-        public double AverageRating { get; set; }
-
-        [Column("reviews_count")]
-        public int ReviewsCount { get; set; }
-
         public Route Route { get; set; } = null!;
     }
 }
