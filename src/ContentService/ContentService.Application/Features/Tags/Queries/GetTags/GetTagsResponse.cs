@@ -2,9 +2,12 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace ContentService.Application.Features.Tags.Commands.GetTags
+namespace ContentService.Application.Features.Tags.Queries.GetTags
 {
-    internal class GetTagsResponse
+    public class GetTagsResponse
     {
+        public Guid Id { get; set; }
+
+        public string Name { get; set; } = string.Empty;
     }
 }
