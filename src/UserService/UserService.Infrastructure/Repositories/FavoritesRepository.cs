@@ -14,20 +14,20 @@ public class FavoritesRepository : IFavoritesRepository
         _context = context;
     }
     
-    public async Task<IReadOnlyCollection<Favorite>> GetUserFavoritesAsync(Guid userId)
+    public async Task<IReadOnlyCollection<Guid>> GetUserFavoritesAsync(Guid userId, CancellationToken ct = default)
     {
-        return await _context.Favorites.Where(f => f.UserId == userId).ToListAsync();
+        return await _context.Favorites.Where(f => f.UserId == userId).Select(x => x.Id).ToListAsync(ct);
     }
 
-    public async Task<IReadOnlyCollection<Favorite>> GetRouteFavoritesAsync(Guid routeId)
+    public async Task<IReadOnlyCollection<Guid>> GetRouteFavoritesAsync(Guid routeId,  CancellationToken ct = default)
     {
-        return await _context.Favorites.Where(f => f.RouteId == routeId).ToListAsync();
+        return await _context.Favorites.Where(f => f.RouteId == routeId).Select(x => x.Id).ToListAsync(ct);
     }
 
-    public async Task AddFavoriteAsync(Favorite favorite)
+    public async Task AddFavoriteAsync(Favorite favorite, CancellationToken ct = default(CancellationToken))
     {
         _context.Favorites.Add(favorite);
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(ct);
     }
 
     public void Delete(Favorite favorite)
@@ -35,13 +35,18 @@ public class FavoritesRepository : IFavoritesRepository
         _context.Favorites.Remove(favorite);
     }
 
-    public async Task<bool> IsFavoriteAsync(Guid  routeId, Guid userId)
+    public async Task<bool> IsFavoriteAsync(Guid  routeId, Guid userId, CancellationToken ct = default(CancellationToken))
     {
-        return await _context.Favorites.AnyAsync(x => x.RouteId == routeId && x.UserId == userId);
+        return await _context.Favorites.AnyAsync(x => x.RouteId == routeId && x.UserId == userId, ct);
     }
 
     public async Task<IReadOnlyCollection<Favorite>> GetAllFavoritesAsync()
     {
         return await _context.Favorites.ToListAsync();
+    }
+
+    public async Task<Favorite> GetByUserAndRouteAsync(Guid routeId, Guid userId, CancellationToken ct = default)
+    {
+        return await _context.Favorites.Where(f => f.RouteId == routeId && f.UserId == userId).FirstAsync(ct);
     }
 }
