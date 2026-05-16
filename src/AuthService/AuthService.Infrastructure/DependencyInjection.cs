@@ -19,13 +19,17 @@ public static class DependencyInjection
 
         var postgresConnection = configuration.GetConnectionString("Postgres")
                                  ?? throw new InvalidOperationException("ConnectionStrings:Postgres is required.");
+        var userPostgresConnection = configuration.GetConnectionString("UserPostgres")
+                                     ?? throw new InvalidOperationException("ConnectionStrings:UserPostgres is required.");
         var redisConnection = configuration.GetConnectionString("Redis")
                               ?? throw new InvalidOperationException("ConnectionStrings:Redis is required.");
 
         services.AddDbContext<AuthDbContext>(options => options.UseNpgsql(postgresConnection));
+        services.AddDbContext<UserDbContext>(options => options.UseNpgsql(userPostgresConnection));
         services.AddSingleton<IConnectionMultiplexer>(_ => ConnectionMultiplexer.Connect(redisConnection));
 
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IUserProfileRepository, UserProfileRepository>();
         services.AddSingleton<IPasswordHasher, BcryptPasswordHasher>();
         services.AddSingleton<ITokenService, JwtTokenService>();
         services.AddSingleton<ISessionStore, RedisSessionStore>();

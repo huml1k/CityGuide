@@ -55,12 +55,6 @@ public sealed class AuthDbContext : DbContext
             entity.Property(e => e.IpAddress)
                   .HasColumnName("ip_address")
                   .HasMaxLength(45);
-
-            // Связь с User
-            entity.HasOne(x => x.User)
-                  .WithMany()
-                  .HasForeignKey(e => e.UserId)
-                  .OnDelete(DeleteBehavior.Cascade); // или Restrict, в зависимости от политики
         });
 
         // Глобальный query filter для soft delete (опционально, но рекомендуется)

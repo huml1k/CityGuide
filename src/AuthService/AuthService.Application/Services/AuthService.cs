@@ -10,17 +10,20 @@ namespace AuthService.Application.Services;
 public sealed class AuthService : IAuthService
 {
     private readonly IUserRepository _userRepository;
+    private readonly IUserProfileRepository _userProfileRepository;
     private readonly IPasswordHasher _passwordHasher;
     private readonly ITokenService _tokenService;
     private readonly ISessionStore _sessionStore;
 
     public AuthService(
         IUserRepository userRepository,
+        IUserProfileRepository userProfileRepository,
         IPasswordHasher passwordHasher,
         ITokenService tokenService,
         ISessionStore sessionStore)
     {
         _userRepository = userRepository;
+        _userProfileRepository = userProfileRepository;
         _passwordHasher = passwordHasher;
         _tokenService = tokenService;
         _sessionStore = sessionStore;
@@ -46,7 +49,10 @@ public sealed class AuthService : IAuthService
         };
 
         await _userRepository.AddAsync(user, cancellationToken);
+        await _userProfileRepository.AddAsync(new UserProfile { UserId = user.Id }, cancellationToken);
+
         await _userRepository.SaveChangesAsync(cancellationToken);
+        await _userProfileRepository.SaveChangesAsync(cancellationToken);
 
         return await IssueTokensAsync(user, revokeExistingSessions: true, cancellationToken);
     }
