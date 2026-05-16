@@ -1,0 +1,28 @@
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace AuthService.Domain.Entities;
+
+[Table("user_profiles")]
+public class UserProfile
+{
+    [Key]
+    [Column("user_id")]
+    public Guid UserId { get; set; }
+
+    [Column("full_name")]
+    [MaxLength(150)]
+    public string? FullName { get; set; }
+
+    [Column("avatar_url")]
+    [MaxLength(500)]
+    public string? AvatarUrl { get; set; }
+
+    [Column("bio")]
+    [MaxLength(1000)]
+    public string? Bio { get; set; }
+
+    [Column("phone")]
+    [MaxLength(30)]
+    public string? Phone { get; set; }
+}

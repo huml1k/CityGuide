@@ -75,5 +75,10 @@ namespace ContentService.Domain.Interfaces.Repositories
         /// Проверка существования маршрута.
         /// </summary>
         Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Поиск маршрута либо по названию ли бо тэгу.
+        /// </summary>
+        Task<IReadOnlyCollection<Route>> SearchAsync(string search, CancellationToken cancellationToken = default);
     }
 }

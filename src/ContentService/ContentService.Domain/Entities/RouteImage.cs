@@ -31,6 +31,9 @@ namespace ContentService.Domain.Entities
         [Column("created_at")]
         public DateTime CreatedAt { get; set; }
 
+        [Column("deleted_at")]
+        public DateTime DeletedAt { get; set; }
+
         public Route Route { get; set; } = null!;
     }
 }

@@ -27,19 +27,9 @@ namespace ContentService.Domain.Entities
         [Column("duration_minutes")]
         public int DurationMinutes { get; set; }
 
-        [Column("price", TypeName = "decimal(18,2)")]
-        public decimal Price { get; set; }
-
-        [Column("status")]
-        [MaxLength(50)]
-        public string Status { get; set; } = "draft";   
-
         [Column("google_maps_url")]
         [MaxLength(500)]
         public string? GoogleMapsUrl { get; set; }
-
-        [Column("version")]
-        public int Version { get; set; } = 1;
 
         [Column("deleted_at")]
         public DateTime? DeletedAt { get; set; }
@@ -62,8 +52,6 @@ namespace ContentService.Domain.Entities
         public ICollection<RouteTag> RouteTags { get; set; }
             = new List<RouteTag>();
 
-        public ICollection<RouteReview> RouteReviews { get; set; }
-            = new List<RouteReview>();
 
         public RouteStats? RouteStats { get; set; }
 

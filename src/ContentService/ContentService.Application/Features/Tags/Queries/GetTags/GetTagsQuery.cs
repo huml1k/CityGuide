@@ -1,10 +1,12 @@
-﻿using System;
+﻿using ContentService.Application.Features.Routes.Queries.GetRoutes;
+using MediatR;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace ContentService.Application.Features.Tags.Commands.GetTags
+namespace ContentService.Application.Features.Tags.Queries.GetTags
 {
-    internal class GetTagsQuery
+    public class GetTagsQuery : IRequest<IReadOnlyCollection<GetTagsResponse>>
     {
     }
 }

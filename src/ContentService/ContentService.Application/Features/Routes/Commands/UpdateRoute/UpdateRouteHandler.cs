@@ -29,7 +29,6 @@ namespace ContentService.Application.Features.Routes.Commands.UpdateRoute
             route.Title = request.Title;
             route.Description = request.Description;
             route.DurationMinutes = request.DurationMinutes;
-            route.Price = request.Price;
             route.GoogleMapsUrl = request.GoogleMapsUrl;
             route.UpdatedAt = DateTime.UtcNow;
 

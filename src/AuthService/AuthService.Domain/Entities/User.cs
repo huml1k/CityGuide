@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Text;
 
 namespace AuthService.Domain.Entities
 {
@@ -11,7 +8,7 @@ namespace AuthService.Domain.Entities
     {
         [Key]
         [Column("id")]
-        public Guid Id { get; set; }
+        public Guid Id { get; set; } = Guid.NewGuid();
 
         [Column("email")]
         [MaxLength(255)]
@@ -24,7 +21,7 @@ namespace AuthService.Domain.Entities
 
         [Column("role")]
         [MaxLength(50)]
-        public string Role { get; set; } = "User";        // User, Creator, Admin
+        public string Role { get; set; } = "User";
 
         [Column("is_email_confirmed")]
         public bool IsEmailConfirmed { get; set; } = false;
@@ -36,6 +33,6 @@ namespace AuthService.Domain.Entities
         public DateTime? UpdatedAt { get; set; }
 
         [Column("deleted_at")]
-        public DateTime? DeletedAt { get; set; }          // Soft Delete
+        public DateTime? DeletedAt { get; set; }
     }
 }

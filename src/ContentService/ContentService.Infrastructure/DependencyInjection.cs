@@ -1,4 +1,5 @@
 ﻿using ContentService.Domain.Interfaces.Repositories;
+using ContentService.Infrastructure.Extensions;
 using ContentService.Infrastructure.Persistence;
 using ContentService.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -12,23 +13,24 @@ namespace ContentService.Infrastructure
 {
     public static class DependencyInjection
     {
-        public static IServiceCollection AddInfrastructure(
-        this IServiceCollection services,
-        IConfiguration configuration)
+        public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddDbContext<ContentDbContext>(options => options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
 
             services.AddScoped<IRouteRepository, RouteRepository>();
 
-            services.AddScoped<ITagRepository, TagRepository>();
+            services.AddScoped<IAudioFileRepository, AudioFileRepository>();
 
-            services.AddScoped<IRouteReviewRepository, RouteReviewRepository>();
+            services.AddScoped<IRouteImageRepository, RouteImageRepository>();
+
+            services.AddScoped<ITagRepository, TagRepository>();
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             //Redis
             //MinIO
-            //Kafka
+
+            services.AddKafkaProducer(configuration);
 
             return services;
         }
