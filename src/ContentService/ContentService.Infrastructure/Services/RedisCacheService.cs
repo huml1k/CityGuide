@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace ContentService.Application.Interfaces
+namespace ContentService.Infrastructure.Services
 {
-    internal interface ICacheService
+    internal class RedisCacheService
     {
     }
 }
