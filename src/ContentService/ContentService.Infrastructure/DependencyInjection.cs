@@ -23,8 +23,6 @@ namespace ContentService.Infrastructure
 
             services.AddScoped<ITagRepository, TagRepository>();
 
-            services.AddScoped<IRouteReviewRepository, RouteReviewRepository>();
-
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             //Redis
