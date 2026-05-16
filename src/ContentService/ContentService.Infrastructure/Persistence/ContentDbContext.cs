@@ -35,6 +35,7 @@ public class ContentDbContext : DbContext
             entity.Property(e => e.OrderIndex).HasColumnName("order_index").IsRequired();
             entity.Property(e => e.OriginalFilename).HasColumnName("original_filename").HasMaxLength(255);
             entity.Property(e => e.CreatedAt).HasColumnName("created_at").IsRequired();
+            entity.Property(e => e.DeletedAt).HasColumnName("deleted_at");
 
             // Связь с Route (один маршрут — много аудиофайлов)
             entity.HasOne(x => x.Route)
@@ -81,6 +82,7 @@ public class ContentDbContext : DbContext
             entity.Property(e => e.IsCover).HasColumnName("is_cover").HasDefaultValue(false).IsRequired();
             entity.Property(e => e.OrderIndex).HasColumnName("order_index").IsRequired();
             entity.Property(e => e.CreatedAt).HasColumnName("created_at").IsRequired();
+            entity.Property(e => e.DeletedAt).HasColumnName("deleted_at");
 
             entity.HasOne(x => x.Route)
             .WithMany(x => x.RouteImages)
