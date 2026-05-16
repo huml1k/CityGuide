@@ -62,8 +62,6 @@ namespace ContentService.Domain.Entities
         public ICollection<RouteTag> RouteTags { get; set; }
             = new List<RouteTag>();
 
-        public ICollection<RouteReview> RouteReviews { get; set; }
-            = new List<RouteReview>();
 
         public RouteStats? RouteStats { get; set; }
 

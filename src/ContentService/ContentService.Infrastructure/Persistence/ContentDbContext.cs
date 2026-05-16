@@ -14,11 +14,9 @@ public class ContentDbContext : DbContext
     public DbSet<Route> Routes => Set<Route>();
     public DbSet<RouteImage> RouteImages => Set<RouteImage>();
     public DbSet<RoutePoint> RoutePoints => Set<RoutePoint>();
-    public DbSet<RouteReview> RouteReviews => Set<RouteReview>();
     public DbSet<RouteStats> RouteStats => Set<RouteStats>();
     public DbSet<RouteTag> RouteTags => Set<RouteTag>();
     public DbSet<Tag> Tags => Set<Tag>();
-    public DbSet<UserAudioProgress> UserAudioProgress => Set<UserAudioProgress>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -114,25 +112,6 @@ public class ContentDbContext : DbContext
             .OnDelete(DeleteBehavior.Cascade);
         });
 
-        // ==================== RouteReview ====================
-        modelBuilder.Entity<RouteReview>(entity =>
-        {
-            entity.ToTable("route_reviews");
-            entity.HasKey(e => e.Id);
-
-            entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.UserId).HasColumnName("user_id").IsRequired();
-            entity.Property(e => e.RouteId).HasColumnName("route_id").IsRequired();
-            entity.Property(e => e.Rating).HasColumnName("rating").IsRequired();
-            entity.Property(e => e.Comment).HasColumnName("comment").HasMaxLength(1000);
-            entity.Property(e => e.CreatedAt).HasColumnName("created_at").IsRequired();
-
-            entity.HasOne(x => x.Route)
-                .WithMany(x => x.RouteReviews)
-                .HasForeignKey(x => x.RouteId);
-
-            entity.HasIndex(e => new { e.RouteId, e.UserId }).IsUnique(); // один отзыв от пользователя на маршрут
-        });
 
         // ==================== RouteStats ====================
         modelBuilder.Entity<RouteStats>(entity =>
@@ -185,26 +164,5 @@ public class ContentDbContext : DbContext
                 .HasForeignKey(x => x.TagId);
         });
 
-        // ==================== UserAudioProgress ====================
-        modelBuilder.Entity<UserAudioProgress>(entity =>
-        {
-            entity.ToTable("user_audio_progress");
-            entity.HasKey(e => e.Id);
-
-            entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.UserId).HasColumnName("user_id").IsRequired();
-            entity.Property(e => e.AudioFileId).HasColumnName("audio_file_id").IsRequired();
-            entity.Property(e => e.ProgressSeconds).HasColumnName("progress_seconds").HasDefaultValue(0).IsRequired();
-            entity.Property(e => e.IsCompleted).HasColumnName("is_completed").HasDefaultValue(false).IsRequired();
-            entity.Property(e => e.UpdatedAt).HasColumnName("updated_at").IsRequired();
-
-            // Связь с AudioFile
-            entity.HasOne(x => x.AudioFile)
-                  .WithMany()
-                  .HasForeignKey(x => x.AudioFileId)
-                  .OnDelete(DeleteBehavior.Cascade);
-
-            entity.HasIndex(e => new { e.UserId, e.AudioFileId }).IsUnique();
-        });
     }
 }
