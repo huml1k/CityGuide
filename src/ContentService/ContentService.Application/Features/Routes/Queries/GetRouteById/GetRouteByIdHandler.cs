@@ -32,10 +32,9 @@ namespace ContentService.Application.Features.Routes.Queries.GetRouteById
                 Title = route.Title,
                 Description = route.Description,
                 DurationMinutes = route.DurationMinutes,
-                Price = route.Price,
-                Status = route.Status,
                 GoogleMapsUrl = route.GoogleMapsUrl,
                 CreatedAt = route.CreatedAt,
+                FavoritesCount = route.RouteStats.FavoritesCount,
 
                 Points = route.RoutePoints
                     .Select(x => new RoutePointDto
