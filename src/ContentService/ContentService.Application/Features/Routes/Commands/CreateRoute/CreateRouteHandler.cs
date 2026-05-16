@@ -27,9 +27,7 @@ namespace ContentService.Application.Features.Routes.Commands.CreateRoute
                 Title = request.Title,
                 Description = request.Description,
                 DurationMinutes = request.DurationMinutes,
-                Price = request.Price,
                 GoogleMapsUrl = request.GoogleMapsUrl,
-                Status = "draft",
                 CreatedAt = DateTime.UtcNow
             };
 

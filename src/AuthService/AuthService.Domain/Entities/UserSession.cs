@@ -38,5 +38,7 @@ namespace AuthService.Domain.Entities
         [Column("ip_address")]
         public string? IpAddress { get; set; }
 
+        public User User { get; set; }
+
     }
 }

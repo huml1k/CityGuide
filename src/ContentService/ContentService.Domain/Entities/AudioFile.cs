@@ -36,7 +36,5 @@ namespace ContentService.Domain.Entities
 
         public Route Route { get; set; } = null!;
 
-        public ICollection<UserAudioProgress> UserAudioProgresses { get; set; } 
-            = new List<UserAudioProgress>();
     }
 }
