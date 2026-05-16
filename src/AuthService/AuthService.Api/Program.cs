@@ -10,7 +10,8 @@ using Microsoft.IdentityModel.Tokens;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
-builder.Services.AddOpenApi();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddAuthorization();
@@ -47,7 +48,11 @@ using (var scope = app.Services.CreateScope())
 {
     var authDbContext = scope.ServiceProvider.GetRequiredService<AuthDbContext>();
     var userDbContext = scope.ServiceProvider.GetRequiredService<UserDbContext>();
-    await authDbContext.Database.EnsureCreatedAsync();
+
+    // AuthDbContext: только миграции (не смешивать с EnsureCreated — иначе 42P07 "already exists").
+    await authDbContext.Database.MigrateAsync();
+
+    // UserDbContext: миграций пока нет — схема через EnsureCreated.
     await userDbContext.Database.EnsureCreatedAsync();
 }
 
