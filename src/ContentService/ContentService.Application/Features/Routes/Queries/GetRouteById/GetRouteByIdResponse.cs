@@ -18,9 +18,7 @@ namespace ContentService.Application.Features.Routes.Queries.GetRouteById
 
         public int DurationMinutes { get; set; }
 
-        public decimal Price { get; set; }
-
-        public string Status { get; set; } = string.Empty;
+        public int FavoritesCount { get; set; }
 
         public string? GoogleMapsUrl { get; set; }
 

@@ -36,7 +36,7 @@ namespace ContentService.Infrastructure.Repositories
 
         public async Task<IReadOnlyCollection<Route>> GetAllAsync(CancellationToken cancellationToken = default)
         {
-            return await _context.Routes.ToListAsync(cancellationToken);
+            return await _context.Routes.Include(x => x.RouteStats).Include(x => x.RouteImages).ToListAsync(cancellationToken);
         }
 
         public async Task<IReadOnlyCollection<Route>> GetByCreatorIdAsync(Guid creatorId, CancellationToken cancellationToken = default)
@@ -59,6 +59,7 @@ namespace ContentService.Infrastructure.Repositories
             return await _context.Routes.Include(x => x.RoutePoints)
                 .Include(x => x.RouteImages)
                 .Include(x => x.AudioFiles)
+                .Include(x => x.RouteStats)
                 .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
         }
 
@@ -70,6 +71,21 @@ namespace ContentService.Infrastructure.Repositories
         void IRouteRepository.Update(Route route)
         {
             _context.Routes.Update(route);
+        }
+
+        public async Task<IReadOnlyCollection<Route>> SearchAsync(string search, CancellationToken cancellationToken = default)
+        {
+            return await _context.Routes
+                .AsNoTracking()
+                .Include(x => x.RouteStats)
+                .Include(x => x.RouteImages)
+                .Include(x => x.RouteTags)
+                    .ThenInclude(x => x.Tag)
+                .Where(x =>
+                    x.Title.Contains(search) ||
+                    x.RouteTags.Any(t =>
+                        t.Tag.Name.Contains(search)))
+                .ToListAsync(cancellationToken);
         }
     }
 }
