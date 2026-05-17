@@ -1,9 +1,9 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using UserService.Application.Interfaces.Service;
 using UserService.Domain.Entities;
 using UserService.Domain.Interfaces;
-using UserService.Domain.Interfaces.Service;
 
 namespace UserService.Application;
 

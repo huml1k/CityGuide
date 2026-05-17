@@ -1,6 +1,4 @@
-﻿using UserService.Domain.Entities;
-
-namespace UserService.Domain.Interfaces.Service;
+﻿namespace UserService.Application.Interfaces.Service;
 
 public interface IFavoriteService
 {
