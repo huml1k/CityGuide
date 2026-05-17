@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CityGuide - Туристические маршруты</title>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Tailwind CSS CDN для красивого вида без усилий -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 font-sans">
+
+    <!-- HEADER -->
+    <header class="bg-blue-600 text-white shadow-md">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 class="text-3xl font-bold">CityGuide</h1>
+            
+            <nav class="flex items-center gap-6">
+                <a href="pages/login.html" 
+                   class="bg-white text-blue-600 px-5 py-2 rounded-lg font-medium hover:bg-gray-100 transition">
+                    Войти
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto px-6 py-8">
+
+        <!-- SEARCH -->
+        <div class="mb-10">
+            <h2 class="text-4xl font-bold text-center mb-6">Найдите свой маршрут</h2>
+            <div class="max-w-2xl mx-auto">
+                <div class="relative">
+                    <input type="text" id="searchInput"
+                           class="w-full px-6 py-4 text-lg border border-gray-300 rounded-2xl focus:outline-none focus:border-blue-500 shadow-sm"
+                           placeholder="Поиск по названию или городу...">
+                    <button onclick="searchRoutes()" 
+                            class="absolute right-2 top-1/2 -translate-y-1/2 bg-blue-600 text-white px-8 py-3 rounded-xl hover:bg-blue-700">
+                        Искать
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- FILTERS -->
+        <div class="flex flex-wrap gap-4 mb-8">
+            
+            <div>
+                <label class="block text-sm text-gray-600 mb-1">Теги</label>
+                <select id="tagFilter" class="border border-gray-300 rounded-lg px-4 py-2">
+                    <option value="">Все теги</option>
+                    <option value="walking">Пешие</option>
+                    <option value="car">На авто</option>
+                    <option value="one-day">На 1 день</option>
+                    <option value="weekend">Выходные</option>
+                </select>
+            </div>
+        </div>
+        
+<!-- POPULAR ROUTES -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-semibold mb-6">Популярные маршруты</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="popularRoutes">
+                <!-- Карточки добавляются через JS -->
+            </div>
+        </section>
+
+        <!-- ALL ROUTES -->
+        <section>
+            <h2 class="text-2xl font-semibold mb-6">Все маршруты</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="allRoutes">
+                <!-- Карточки добавляются через JS -->
+            </div>
+        </section>
+    </div>
+
+    <script src="js/main.js"></script>
+</body>
+</html>

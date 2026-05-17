@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CityGuide - Детали маршрута</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 font-sans">
+
+    <!-- HEADER -->
+    <header class="bg-blue-600 text-white shadow-md">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 onclick="window.location.href='../index.html'" 
+                class="text-3xl font-bold cursor-pointer">CityGuide</h1>
+            <nav class="flex items-center gap-6">
+                <a href="../index.html" class="hover:underline">Главная</a>
+                <a href="../index.html" class="bg-white text-blue-600 px-5 py-2 rounded-lg font-medium hover:bg-gray-100 transition">
+                    Войти
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto px-6 py-8">
+
+        <!-- Название маршрута -->
+        <div class="flex justify-between items-start mb-6">
+            <h1 id="routeTitle" class="text-4xl font-bold">Исторический центр Москвы</h1>
+            <div class="flex items-center gap-2">
+                <button onclick="toggleLike()" id="likeButton"
+                        class="flex items-center gap-2 text-2xl hover:scale-110 transition">
+                    ❤️ <span id="likesCount" class="text-2xl font-semibold">124</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Информация о маршруте -->
+        <div class="flex flex-wrap gap-6 text-gray-600 mb-8">
+            <div class="flex items-center gap-2">
+                <span class="text-xl">⏱</span>
+                <span id="duration" class="font-medium">4 часа</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span>👤</span>
+                <a href="#" id="creatorLink" class="text-blue-600 hover:underline">Анна Петрова</a>
+            </div>
+        </div>
+
+        <!-- Теги -->
+        <div class="flex gap-2 mb-8" id="tagsContainer">
+            <!-- Теги добавляются через JS -->
+        </div>
+
+        <!-- Галерея фото -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-10" id="photoGallery">
+            <!-- Фото добавляются через JS -->
+        </div>
+
+        <!-- Описание -->
+        <div class="bg-white rounded-2xl p-8 mb-10 shadow-sm">
+            <h2 class="text-2xl font-semibold mb-4">Описание маршрута</h2>
+            <p id="description" class="text-gray-700 leading-relaxed text-lg">
+                Увлекательная прогулка по самому сердцу Москвы. Вы увидите Красную площадь, 
+                Собор Василия Блаженного, Государственный Исторический музей, Александровский сад 
+                и многие другие знаковые места столицы.
+            </p>
+        </div>
+
+        <!-- Аудио экскурсия -->
+        <div class="bg-white rounded-2xl p-8 mb-10 shadow-sm">
+            <h2 class="text-2xl font-semibold mb-4">🎧 Аудио экскурсия</h2>
+            <audio id="audioPlayer" controls class="w-full">
+                <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+                Ваш браузер не поддерживает аудио.
+            </audio>
+            <p class="text-sm text-gray-500 mt-2">Голос: Анна Петрова • 28 минут</p>
+        </div>
+
+        <!-- Карта - твой маршрут -->
+        <div class="bg-white rounded-2xl p-8 mb-10 shadow-sm">
+            <h2 class="text-2xl font-semibold mb-4">Маршрут на карте</h2>
+
+             <iframe 
+                src="https://www.google.com/maps/embed?pb=!1m28!1m8!1m3!1d4485.380041002979!2d49.1151125!3d55.7986203!3m2!1i1024!2i768!4f13.1!4m17!3e2!4m3!3m2!1d55.794827899999994!2d49.112687!4m3!3m2!1d55.7906711!2d49.123081899999995!4m3!3m2!1d55.7981105!2d49.115782499999995!4m3!3m2!1d55.802099!2d49.1223988!5e0!3m2!1sru!2sru!4v1779010981351!5m2!1sru!2sru"
+                width="100%" 
+                height="500" 
+                style="border:0; border-radius: 16px;" 
+                allowfullscreen="" 
+                loading="lazy"
+                referrerpolicy="no-referrer-when-downgrade">
+            </iframe>
+            <div class="text-center mt-4">
+                <a href="https://maps.app.goo.gl/hBqnDbnvuoFQoLum7" 
+                   target="_blank"
+                   class="text-blue-600 hover:underline font-medium">
+                    Открыть в Google Maps в новой вкладке →
+                </a>
+            </div>
+        </div>
+        
+    <script>
+        // Данные маршрута (в реальном проекте придут с API)
+        const routeData = {
+            title: "Исторический центр Москвы",
+            duration: "4 часа",
+            creator: "Анна Петрова",
+            likes: 124,
+            liked: false,
+            tags: ["Пеший", "Исторический", "Центр города"],
+            images: [
+                "https://picsum.photos/id/1015/800/600",
+                "https://picsum.photos/id/133/800/600",
+                "https://picsum.photos/id/201/800/600",
+                "https://picsum.photos/id/237/800/600",
+                "https://picsum.photos/id/870/800/600"
+            ]
+        };
+
+        // Заполнение страницы
+        document.getElementById('routeTitle').textContent = routeData.title;
+        document.getElementById('duration').textContent = routeData.duration;
+        document.getElementById('creatorLink').textContent = routeData.creator;
+        document.getElementById('likesCount').textContent = routeData.likes;
+
+        // Теги
+        const tagsContainer = document.getElementById('tagsContainer');
+        routeData.tags.forEach(tag => {
+            const span = document.createElement('span');
+            span.className = "px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-medium";
+            span.textContent = tag;
+            tagsContainer.appendChild(span);
+        });
+
+        // Галерея фото
+        const gallery = document.getElementById('photoGallery');
+        routeData.images.forEach(src => {
+            const div = document.createElement('div');
+            div.className = "rounded-2xl overflow-hidden shadow-md";
+            div.innerHTML = `<img src="${src}" class="w-full h-64 object-cover hover:scale-105 transition">`;
+            gallery.appendChild(div);
+        });
+
+        // Лайк
+        function toggleLike() {
+            const btn = document.getElementById('likeButton');
+            const countEl = document.getElementById('likesCount');
+            let count = parseInt(countEl.textContent);
+
+            if (btn.classList.contains('liked')) {
+                btn.classList.remove('liked');
+                countEl.textContent = count - 1;
+            } else {
+                btn.classList.add('liked');
+                countEl.textContent = count + 1;
+            }
+        }
+    </script>
+</body>
+</html>
