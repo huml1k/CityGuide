@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using UserService.Domain.Interfaces.Service;
+using UserService.Application.Interfaces.Service;
 
 namespace UserService.Api.Controller;
 
