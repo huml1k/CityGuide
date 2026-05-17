@@ -2,92 +2,147 @@ name: cityguide
 
 services:
   apigateway:
+    profiles: [apps]
     container_name: cityguide-apigateway
     image: ${REGISTRY:-local}/cityguide-apigateway:${TAG:-dev}
     build:
       context: ..
       dockerfile: src/ApiGateway/ApiGateway.Api/Dockerfile
     environment:
-      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
       ASPNETCORE_URLS: http://+:8080
     restart: unless-stopped
     ports:
       - "${GATEWAY_PORT:-8080}:8080"
+    depends_on:
+      - authservice
+      - userservice
+      - contentservice
+      - notificationservice
     networks:
       - cityguide
 
   authservice:
+    profiles: [apps]
     container_name: cityguide-authservice
     image: ${REGISTRY:-local}/cityguide-authservice:${TAG:-dev}
     build:
       context: ..
       dockerfile: src/AuthService/AuthService.Api/Dockerfile
     environment:
-      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
       ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__Postgres: Host=admin-db;Port=5432;Database=${ADMIN_DB_NAME};Username=${ADMIN_DB_USER};Password=${ADMIN_DB_PASSWORD}
+      ConnectionStrings__UserPostgres: Host=user-db;Port=5432;Database=${USER_DB_NAME};Username=${USER_DB_USER};Password=${USER_DB_PASSWORD}
+      ConnectionStrings__Redis: redis:6379
     restart: unless-stopped
     ports:
       - "${AUTH_PORT:-8081}:8080"
+    depends_on:
+      admin-db:
+        condition: service_healthy
+      user-db:
+        condition: service_healthy
+      redis:
+        condition: service_started
     networks:
       - cityguide
 
   userservice:
+    profiles: [apps]
     container_name: cityguide-userservice
     image: ${REGISTRY:-local}/cityguide-userservice:${TAG:-dev}
     build:
       context: ..
       dockerfile: src/UserService/UserService.Api/Dockerfile
     environment:
-      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
       ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__DefaultConnection: Host=user-db;Port=5432;Database=${USER_DB_NAME};Username=${USER_DB_USER};Password=${USER_DB_PASSWORD}
+      CityGuideAuth__IntrospectionBaseUrl: http://authservice:8080
     restart: unless-stopped
     ports:
       - "${USER_PORT:-8082}:8080"
+    depends_on:
+      user-db:
+        condition: service_healthy
+      authservice:
+        condition: service_started
     networks:
       - cityguide
 
   contentservice:
+    profiles: [apps]
     container_name: cityguide-contentservice
     image: ${REGISTRY:-local}/cityguide-contentservice:${TAG:-dev}
     build:
       context: ..
       dockerfile: src/ContentService/ContentService.Api/Dockerfile
     environment:
-      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
       ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__DefaultConnection: Host=content-db;Port=5432;Database=${CONTENT_DB_NAME};Username=${CONTENT_DB_USER};Password=${CONTENT_DB_PASSWORD}
+      Kafka__BootstrapServers: kafka:9092
+      CityGuideAuth__IntrospectionBaseUrl: http://authservice:8080
     restart: unless-stopped
     ports:
       - "${CONTENT_PORT:-8083}:8080"
+    depends_on:
+      content-db:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+      authservice:
+        condition: service_started
     networks:
       - cityguide
 
   notificationservice:
+    profiles: [apps]
     container_name: cityguide-notificationservice
     image: ${REGISTRY:-local}/cityguide-notificationservice:${TAG:-dev}
     build:
       context: ..
       dockerfile: src/NotificationService/NotificationService.Api/Dockerfile
     environment:
-      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
       ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__DefaultConnection: Host=notification-db;Port=5432;Database=${NOTIFICATION_DB_NAME};Username=${NOTIFICATION_DB_USER};Password=${NOTIFICATION_DB_PASSWORD}
+      Kafka__BootstrapServers: kafka:9092
+      CityGuideAuth__IntrospectionBaseUrl: http://authservice:8080
     restart: unless-stopped
     ports:
       - "${NOTIFICATION_PORT:-8084}:8080"
+    depends_on:
+      notification-db:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+      authservice:
+        condition: service_started
     networks:
       - cityguide
 
   adminservice:
+    profiles: [apps]
     container_name: cityguide-adminservice
     image: ${REGISTRY:-local}/cityguide-adminservice:${TAG:-dev}
     build:
       context: ..
       dockerfile: src/AdminService/AdminService.Api/Dockerfile
     environment:
-      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
       ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__DefaultConnection: Host=admin-db;Port=5432;Database=${ADMIN_DB_NAME};Username=${ADMIN_DB_USER};Password=${ADMIN_DB_PASSWORD}
+      CityGuideAuth__IntrospectionBaseUrl: http://authservice:8080
     restart: unless-stopped
     ports:
       - "${ADMIN_PORT:-8085}:8080"
+    depends_on:
+      admin-db:
+        condition: service_healthy
+      authservice:
+        condition: service_started
     networks:
       - cityguide
 
@@ -182,7 +237,7 @@ services:
       PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION: "False"   
       PGADMIN_DISABLE_POSTFIX: "True"                      
     ports:
-      - "5050:80"
+      - "${PGADMIN_PORT:-5050}:80"
     networks:
       - cityguide
     depends_on:
@@ -277,7 +332,6 @@ networks:
     driver: bridge
 
 volumes:
-  auth-db-data:
   user-db-data:
   content-db-data:
   notification-db-data:
