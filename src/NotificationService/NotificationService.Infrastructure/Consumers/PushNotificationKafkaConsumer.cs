@@ -28,7 +28,7 @@ namespace NotificationService.Infrastructure.Consumers
         private readonly JsonSerializerOptions _jsonOptions;
 
         public PushNotificationKafkaConsumer(
-           ConsumerConfig config,
+            ConsumerConfig config,
             INotificationRepository repository,
             IDeadLetterQueueService dlqService,
             IEventNotificationFactory notificationFactory,
@@ -39,7 +39,7 @@ namespace NotificationService.Infrastructure.Consumers
                .GetChildren()
                .Select(c => c.Value)
                .ToArray()
-           ?? new[] { "user.events", "content.events" };
+           ?? new[] { "user.favorites", "content.routes" };
 
             config.GroupId = "notification-service-consumer";
             config.EnableAutoCommit = false;
@@ -96,16 +96,23 @@ namespace NotificationService.Infrastructure.Consumers
             var offset = result.TopicPartitionOffset;
             var topic = result.Topic;
 
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                _logger.LogWarning("Empty message at offset {Offset}. Skipping.", offset);
+                _consumer.Commit(result);
+                return;
+            }
+
             try
             {
-                var notification = topic switch
+                var notifications = topic switch
                 {
-                    var t when t.StartsWith("user") => ParseUserEvent(value),
+                    var t when t.StartsWith("favorites") => ParseFavoriteEvent(value),
                     var t when t.StartsWith("content") => ParseContentEvent(value),
                     _ => null
                 };
 
-                if (notification == null)
+                if (notifications == null)
                 {
                     _logger.LogWarning("Unknown topic or invalid event type: {Topic}", topic);
                     await _dlqService.SendToDlqAsync(value, $"Unknown topic or invalid event type: {topic}", ct);
@@ -113,21 +120,26 @@ namespace NotificationService.Infrastructure.Consumers
                     return;
                 }
 
-                await _repository.AddAsync(notification, ct);
-                await _repository.AddLogAsync(new NotificationLog
+
+                foreach (var notification in notifications)
                 {
-                    Id = Guid.NewGuid(),
-                    NotificationId = notification.Id,
-                    Provider = "Kafka",
-                    Status = "Received",
-                    ErrorMessage = null,
-                    CreatedAt = DateTime.UtcNow
-                }, ct);
+                    await _repository.AddAsync(notification, ct);
+                    await _repository.AddLogAsync(new NotificationLog
+                    {
+                        Id = Guid.NewGuid(),
+                        NotificationId = notification.Id,
+                        Provider = "Kafka",
+                        Status = "Received",
+                        ErrorMessage = null,
+                        CreatedAt = DateTime.UtcNow
+                    }, ct);
+                }
+               
 
                 await _repository.SaveChangesAsync(ct);
                 _consumer.Commit(result);
 
-                _logger.LogInformation("Notification saved. UserId: {UserId}, Type: {Type}", notification.UserId, notification.Type);
+                _logger.LogInformation("Batch processed. Created {Count} notification(s) from topic {Topic}", notifications.Count, topic);
             }
             catch (Exception ex)
             {
@@ -137,13 +149,13 @@ namespace NotificationService.Infrastructure.Consumers
             }
         }
 
-        private Notification? ParseUserEvent(string value)
+        private List<Notification?> ParseFavoriteEvent(string value)
         {
-            var dto = JsonSerializer.Deserialize<UserEventDto>(value, _jsonOptions);
-            return dto == null ? null : _notificationFactory.CreateFromUserEvent(dto);
+            var dto = JsonSerializer.Deserialize<FavoriteEventDto>(value, _jsonOptions);
+            return dto == null ? null : _notificationFactory.CreateFromFavoriteEvent(dto);
         }
 
-        private Notification? ParseContentEvent(string value)
+        private List<Notification?> ParseContentEvent(string value)
         {
             var dto = JsonSerializer.Deserialize<ContentEventDto>(value, _jsonOptions);
             return dto == null ? null : _notificationFactory.CreateFromContentEvent(dto);
@@ -151,7 +163,7 @@ namespace NotificationService.Infrastructure.Consumers
 
         public override async Task StopAsync(CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Остановка consumer");
+            _logger.LogInformation("Stopping consumer");
             _consumer.Close();
             await base.StopAsync(cancellationToken);
         }

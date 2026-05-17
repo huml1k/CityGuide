@@ -8,7 +8,7 @@ namespace NotificationService.Application.Services.Interface
 {
     public interface IEventNotificationFactory
     {
-        public Notification? CreateFromUserEvent(UserEventDto dto);
-        public Notification? CreateFromContentEvent(ContentEventDto dto);
+        public List<Notification?> CreateFromFavoriteEvent(FavoriteEventDto dto);
+        public List<Notification?> CreateFromContentEvent(ContentEventDto dto);
     }
 }
