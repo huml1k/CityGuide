@@ -1,5 +1,24 @@
 # This is a generated file. Not intended for manual editing.
 services:
+  adminservice:
+    build:
+      context: "C:\\Users\\parsifal\\Desktop\\Старый пк\\Программирование\\CityGuide"
+      dockerfile: "src/AdminService/AdminService.Api/Dockerfile"
+      target: "base"
+    command: []
+    entrypoint:
+    - "dotnet"
+    - "/app/bin/Debug/net10.0/AdminService.Api.dll"
+    environment:
+      DOTNET_USE_POLLING_FILE_WATCHER: "true"
+    image: "local/cityguide-adminservice:dev"
+    ports: []
+    volumes:
+    - "C:\\Users\\parsifal\\Desktop\\Старый пк\\Программирование\\CityGuide\\src\\\
+      AdminService\\AdminService.Api:/app:rw"
+    - "C:\\Users\\parsifal\\Desktop\\Старый пк\\Программирование\\CityGuide:/src:rw"
+    - "C:\\Users\\parsifal\\.nuget\\packages:/home/app/.nuget/packages"
+    working_dir: "/app"
   apigateway:
     build:
       context: "C:\\Users\\parsifal\\Desktop\\Старый пк\\Программирование\\CityGuide"
