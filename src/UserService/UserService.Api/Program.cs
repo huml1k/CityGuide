@@ -1,3 +1,4 @@
+using Confluent.Kafka;
 using Microsoft.EntityFrameworkCore;
 using UserService.Application;
 using UserService.Application.Interfaces.Service;
@@ -12,6 +13,26 @@ builder.Services.AddControllers();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddSingleton<IEventPublisher, KafkaEventPublisher>();
+
+builder.Services.AddSingleton<IProducer<string, string>>(sp =>
+{
+    var config = new ProducerConfig
+    {
+        BootstrapServers = builder.Configuration["Kafka:BootstrapServers"],
+        EnableIdempotence = true,
+        Acks = Acks.All,
+        LingerMs = 5,
+        BatchNumMessages = 100
+    };
+
+    return new ProducerBuilder<string, string>(config)
+    .SetErrorHandler((_, e) =>
+    sp.GetRequiredService<ILogger<IProducer<string, string>>>().LogError("Kafka Producer Error: {Reason}", e.Reason))
+    .Build();
+}
+           );
 
 // === EF Core ===
 builder.Services.AddDbContext<UserDbContext>(options =>
