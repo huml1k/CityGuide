@@ -9,18 +9,20 @@ namespace NotificationService.Application.Services
 {
     public class EventNotificationFactory : IEventNotificationFactory
     {
-        public Notification? CreateFromContentEvent(ContentEventDto dto)
+        public List<Notification?> CreateFromContentEvent(ContentEventDto dto)
         {
-            if (string.IsNullOrWhiteSpace(dto.EventType)) return null;
+            if (string.IsNullOrWhiteSpace(dto.EventType)) return new();
 
             var routeName = string.IsNullOrWhiteSpace(dto.RouteTitle) ? $"Маршрут #{dto.RouteId}" : dto.RouteTitle;
+            var notifications = new List<Notification>();
+            var baseDate = dto.Timestamp == default ? DateTime.UtcNow : dto.Timestamp;
 
-            var (type, title, message) = dto.EventType.ToLowerInvariant() switch
+            (string? type, string? title, string? message) eventInfo = dto.EventType.ToLowerInvariant() switch
             {
                 "approved" => (
                     "ContentApproved",
                     "Маршрут одобрен",
-                    $"Ваш маршрут «{routeName}» успешно прошёл модерацию и теперь доступен пользователям."
+                    $"Ваш маршрут «{routeName}» успешно создан и теперь доступен пользователям."
                 ),
                 "updated" => (
                     "ContentUpdated",
@@ -35,60 +37,74 @@ namespace NotificationService.Application.Services
                 _ => (null, null, null)
             };
 
-            if (type == null) return null;
+            if (eventInfo.type == null) return notifications;
 
-            return new Notification
+            notifications.Add( new Notification
             {
                 Id = ParseEventId(dto.EventId),
                 UserId = dto.CreatorId, 
-                Type = type,
-                Title = title,
-                Message = message,
-                RelatedRouteId = (int)dto.RouteId, 
+                Type = eventInfo.type,
+                Title = eventInfo.title,
+                Message = eventInfo.message,
+                RelatedRouteId = dto.RouteId, 
                 IsRead = false,
                 CreatedAt = dto.Timestamp == default ? DateTime.UtcNow : dto.Timestamp
-            };
+            });
+
+            return notifications;
         }
 
-        public Notification? CreateFromUserEvent(UserEventDto dto)
+        public List<Notification?> CreateFromFavoriteEvent(FavoriteEventDto dto)
         {
-            if (string.IsNullOrWhiteSpace(dto.EventType)) return null;
+            if (string.IsNullOrWhiteSpace(dto.EventType)) return new();
 
-            var name = string.IsNullOrWhiteSpace(dto.FullName) ? "пользователь" : dto.FullName;
+            var routeName = string.IsNullOrWhiteSpace(dto.RouteTitle) ? $"Маршрут #{dto.RouteId}" : dto.RouteTitle;
+            var notifications = new List<Notification>();
+            var baseDate = dto.Timestamp == default ? DateTime.UtcNow : dto.Timestamp;
 
-            var (type, title, message) = dto.EventType.ToLowerInvariant() switch
+            switch (dto.EventType.ToLowerInvariant()) 
             {
-                "registered" => (
-                    "UserRegistered",
-                    "Добро пожаловать!",
-                    $"Привет, {name}! Ваша регистрация успешно завершена."
-                ),
-                "profileupdated" => (
-                    "UserProfileUpdated",
-                    "Профиль обновлён",
-                    "Изменения в вашем профиле успешно сохранены."
-                ),
-                "deleted" => (
-                    "UserDeleted",
-                    "Аккаунт удалён",
-                    "Ваш аккаунт и все связанные данные были успешно удалены."
-                ),
-                _ => (null, null, null)
-            };
+                case "favoriteadded":
+                    notifications.Add(new Notification
+                    { 
+                        Id = Guid.NewGuid(),
+                        UserId = dto.UserId,
+                        Type = "FavoriteAdded",
+                        Title = "Добавлено в избранное",
+                        Message = $"Маршрут {routeName} успешно добавлено в ваше избранное",
+                        RelatedRouteId = dto.RouteId,
+                        IsRead = false,
+                        CreatedAt= baseDate
+                    });
+                    notifications.Add(new Notification
+                    {
+                        Id = Guid.NewGuid(),
+                        UserId = dto.UserId,
+                        Type = "RouteFavorited",
+                        Title = "Маршрут добавлен в избранное",
+                        Message = $"Пользователь добавил ваш маршрут {routeName} в избранное",
+                        RelatedRouteId = dto.RouteId,
+                        IsRead = false,
+                        CreatedAt = baseDate
+                    });
+                    break;
 
-            if (type == null) return null;
+                case "favoriteremoved":
+                    notifications.Add(new Notification
+                    {
+                        Id = Guid.NewGuid(),
+                        UserId = dto.UserId,
+                        Type = "FavoriteRemoved",
+                        Title = "Удалено из избранного",
+                        Message = $"Маршрут {routeName} удален из вашего избранного",
+                        RelatedRouteId = dto.RouteId,
+                        IsRead = false,
+                        CreatedAt = baseDate
+                    });
+                    break;
+            }
 
-            return new Notification
-            {
-                Id = ParseEventId(dto.EventId),
-                UserId = dto.UserId, 
-                Type = type,
-                Title = title,
-                Message = message,
-                RelatedRouteId = null,
-                IsRead = false,
-                CreatedAt = dto.Timestamp == default ? DateTime.UtcNow : dto.Timestamp
-            };
+            return notifications;
         }
 
         private static Guid ParseEventId(string? eventId)

@@ -31,7 +31,7 @@ namespace NotificationService.Domain.Entities
         public string Message { get; set; }
 
         [Column("related_route_id")]
-        public int? RelatedRouteId { get; set; }
+        public Guid RelatedRouteId { get; set; }
 
         [Column("is_read")]
         public bool IsRead { get; set; }
