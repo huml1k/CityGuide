@@ -21,6 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\AuthService\AuthService.AuthKit\AuthService.AuthKit.csproj" />
     <ProjectReference Include="..\AdminService.Application\AdminService.Application.csproj" />
     <ProjectReference Include="..\AdminService.Infrastructure\AdminService.Infrastructure.csproj" />
   </ItemGroup>

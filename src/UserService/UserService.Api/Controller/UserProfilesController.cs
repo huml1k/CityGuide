@@ -8,6 +8,7 @@ namespace UserService.Api.Controller;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class UserProfilesController : ControllerBase
 {
     private readonly IUserProfileService _profileService;
@@ -18,7 +19,6 @@ public class UserProfilesController : ControllerBase
     }
 
     [HttpGet("me")]
-    [Authorize]
     public async Task<ActionResult<UserProfileDto>> GetMyProfile(CancellationToken ct)
     {
         try
@@ -50,7 +50,6 @@ public class UserProfilesController : ControllerBase
     }
 
     [HttpPut("me")]
-    [Authorize]
     public async Task<IActionResult> Update([FromBody] UpdateUserProfileRequest request, CancellationToken ct)
     {
         try
@@ -69,7 +68,6 @@ public class UserProfilesController : ControllerBase
     }
 
     [HttpDelete("me")]
-    [Authorize]
     public async Task<IActionResult> Delete(CancellationToken ct)
     {
         try

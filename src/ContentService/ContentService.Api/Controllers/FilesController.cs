@@ -5,12 +5,14 @@ using ContentService.Application.Features.Files.Commands.UploadRouteImage;
 using ContentService.Application.Features.Files.Queries.GetAudioFile;
 using ContentService.Application.Features.Files.Queries.GetRouteImage;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ContentService.Api.Controllers
 {
     [ApiController]
     [Route("api/files")]
+    [Authorize]
     public class FilesController : Controller
     {
         private readonly IMediator _mediator;
@@ -68,6 +70,7 @@ namespace ContentService.Api.Controllers
 
         // get image
 
+        [AllowAnonymous]
         [HttpGet("images/{id:guid}")]
         public async Task<IActionResult> GetImage(Guid id, CancellationToken cancellationToken)
         {
@@ -80,6 +83,7 @@ namespace ContentService.Api.Controllers
 
         // get audio
 
+        [AllowAnonymous]
         [HttpGet("audio/{id:guid}")]
         public async Task<IActionResult> GetAudio(Guid id, CancellationToken cancellationToken)
         {

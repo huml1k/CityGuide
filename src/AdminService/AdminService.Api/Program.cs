@@ -1,9 +1,11 @@
-using Microsoft.EntityFrameworkCore;
 using AdminService.Infrastructure.Persistence;
+using AuthService.AuthKit;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
+builder.Services.AddCityGuideServiceAuth(builder.Configuration);
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -28,6 +30,7 @@ if (app.Environment.IsDevelopment())
 //    db.Database.Migrate();
 //}
 
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
