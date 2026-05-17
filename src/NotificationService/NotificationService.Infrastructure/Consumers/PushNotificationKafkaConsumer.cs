@@ -107,8 +107,8 @@ namespace NotificationService.Infrastructure.Consumers
             {
                 var notifications = topic switch
                 {
-                    var t when t.StartsWith("favorites") => ParseFavoriteEvent(value),
-                    var t when t.StartsWith("content") => ParseContentEvent(value),
+                    var t when t.Contains("favorites") => ParseFavoriteEvent(value),
+                    var t when t.Contains("content") => ParseContentEvent(value),
                     _ => null
                 };
 
@@ -116,6 +116,14 @@ namespace NotificationService.Infrastructure.Consumers
                 {
                     _logger.LogWarning("Unknown topic or invalid event type: {Topic}", topic);
                     await _dlqService.SendToDlqAsync(value, $"Unknown topic or invalid event type: {topic}", ct);
+                    _consumer.Commit(result);
+                    return;
+                }
+
+                if (notifications == null || notifications.Count == 0)
+                {
+                    _logger.LogWarning("Factory returned empty list for topic {Topic}. Event type might be unsupported.", topic);
+                    await _dlqService.SendToDlqAsync(value, $"Factory returned empty: {topic}", ct);
                     _consumer.Commit(result);
                     return;
                 }
@@ -149,13 +157,13 @@ namespace NotificationService.Infrastructure.Consumers
             }
         }
 
-        private List<Notification?> ParseFavoriteEvent(string value)
+        private List<Notification> ParseFavoriteEvent(string value)
         {
             var dto = JsonSerializer.Deserialize<FavoriteEventDto>(value, _jsonOptions);
             return dto == null ? null : _notificationFactory.CreateFromFavoriteEvent(dto);
         }
 
-        private List<Notification?> ParseContentEvent(string value)
+        private List<Notification> ParseContentEvent(string value)
         {
             var dto = JsonSerializer.Deserialize<ContentEventDto>(value, _jsonOptions);
             return dto == null ? null : _notificationFactory.CreateFromContentEvent(dto);
