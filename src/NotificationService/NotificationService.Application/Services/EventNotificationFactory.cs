@@ -79,7 +79,7 @@ namespace NotificationService.Application.Services
                     notifications.Add(new Notification
                     {
                         Id = Guid.NewGuid(),
-                        UserId = dto.UserId,
+                        UserId = dto.CreatorId,
                         Type = "RouteFavorited",
                         Title = "Маршрут добавлен в избранное",
                         Message = $"Пользователь добавил ваш маршрут {routeName} в избранное",
