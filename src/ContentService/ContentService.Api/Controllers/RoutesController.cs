@@ -5,7 +5,7 @@ using ContentService.Application.Features.Routes.Queries.GetRouteById;
 using ContentService.Application.Features.Routes.Queries.GetRoutes;
 using ContentService.Application.Features.Routes.Queries.SearchRoutes;
 using MediatR;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
@@ -13,6 +13,7 @@ namespace ContentService.Api.Controllers
 {
     [ApiController]
     [Route("api/routes")]
+    [Authorize]
     public class RoutesController : Controller
     {
         private IMediator _mediator;
@@ -55,6 +56,7 @@ namespace ContentService.Api.Controllers
         }
 
         //get by id
+        [AllowAnonymous]
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById (Guid id, CancellationToken cancellationToken)
         {
@@ -66,6 +68,7 @@ namespace ContentService.Api.Controllers
         }
 
         //get all
+        [AllowAnonymous]
         [HttpGet]
         public async Task<IActionResult> GetAll (CancellationToken cancellationToken)
         {
@@ -77,6 +80,7 @@ namespace ContentService.Api.Controllers
         }
 
         //search
+        [AllowAnonymous]
         [HttpGet("search")]
         public async Task<IActionResult> Search([FromQuery] string search,CancellationToken cancellationToken)
         {

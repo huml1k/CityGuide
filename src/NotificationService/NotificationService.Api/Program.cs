@@ -1,3 +1,4 @@
+using AuthService.AuthKit;
 using Confluent.Kafka;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -13,6 +14,7 @@ using NotificationService.Infrastructure.Services.Interface;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
+builder.Services.AddCityGuideServiceAuth(builder.Configuration);
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -56,6 +58,7 @@ if (app.Environment.IsDevelopment())
 //    db.Database.Migrate();
 //}
 
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
