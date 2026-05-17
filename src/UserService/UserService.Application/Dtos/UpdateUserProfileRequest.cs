@@ -1,6 +1,6 @@
 ﻿namespace UserService.Application.Dtos;
 
-public record CreateUserProfileRequest
+public record UpdateUserProfileRequest
 {
     public string? FullName { get; init; }
     public string? AvatarUrl { get; init; }
