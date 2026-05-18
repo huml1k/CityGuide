@@ -40,7 +40,7 @@ namespace ContentService.Application.Features.Routes.Commands.UpdateRoute
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            await _kafkaEventPublisher.PublishAsync("content.events", new ContentEventDto
+            await _kafkaEventPublisher.PublishAsync("content.routes", new ContentEventDto
             {
                 EventId = Guid.NewGuid().ToString(),
                 EventType = "updated",

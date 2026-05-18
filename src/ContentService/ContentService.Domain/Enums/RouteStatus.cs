@@ -2,7 +2,7 @@
 {
     public enum RouteStatus
     {
-        draft,
+        pendingModeration,
         approved,
         rejected,
     }

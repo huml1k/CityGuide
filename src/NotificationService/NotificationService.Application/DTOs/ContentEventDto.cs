@@ -8,13 +8,13 @@ namespace NotificationService.Application.DTOs
     public record ContentEventDto
     {
         [JsonPropertyName("eventId")]
-        public string? EventId { get; init; }
+        public string? EventId { get; init; } = Guid.NewGuid().ToString();
 
         [JsonPropertyName("eventType")]
         public string EventType { get; init; } = string.Empty;
 
         [JsonPropertyName("routeId")]
-        public long RouteId { get; init; }
+        public Guid RouteId { get; init; }
 
         [JsonPropertyName("creatorId")]
         public Guid CreatorId { get; init; } 

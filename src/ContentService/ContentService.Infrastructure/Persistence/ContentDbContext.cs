@@ -1,5 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
-using ContentService.Domain.Entities;
+﻿using ContentService.Domain.Entities;
+using ContentService.Domain.Enums;
+using Microsoft.EntityFrameworkCore;
 
 namespace ContentService.Infrastructure.Persistence;
 
@@ -58,11 +59,18 @@ public class ContentDbContext : DbContext
             entity.Property(e => e.Title).HasColumnName("title").HasMaxLength(200).IsRequired();
             entity.Property(e => e.Description).HasColumnName("description").HasMaxLength(2000);
             entity.Property(e => e.DurationMinutes).HasColumnName("duration_minutes").IsRequired();
+            entity.Property(e => e.Status)
+                .HasColumnName("status")
+                .HasMaxLength(50)
+                .HasConversion<string>()
+                .HasDefaultValueSql("'pendingModeration'")
+                .IsRequired();
             entity.Property(e => e.GoogleMapsUrl).HasColumnName("google_maps_url").HasMaxLength(500);
             entity.Property(e => e.CreatedAt).HasColumnName("created_at").IsRequired();
             entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
             entity.Property(e => e.DeletedAt).HasColumnName("deleted_at");
 
+            entity.HasIndex(e => e.Status);
             entity.HasIndex(e => e.CreatorId);
             entity.HasIndex(e => e.DeletedAt);
 

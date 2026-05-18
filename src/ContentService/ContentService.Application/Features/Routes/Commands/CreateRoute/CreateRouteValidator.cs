@@ -19,9 +19,6 @@ namespace ContentService.Application.Features.Routes.Commands.CreateRoute
             RuleFor(x => x.DurationMinutes)
                 .GreaterThan(0);
 
-            RuleFor(x => x.Price)
-                .GreaterThanOrEqualTo(0);
-
             RuleFor(x => x.CreatorId)
                 .NotEmpty();
         }

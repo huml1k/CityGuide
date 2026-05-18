@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ContentService.Domain.Enums;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -26,6 +27,10 @@ namespace ContentService.Domain.Entities
 
         [Column("duration_minutes")]
         public int DurationMinutes { get; set; }
+
+        [Column("status")]
+        [MaxLength(50)]
+        public RouteStatus Status { get; set; } = RouteStatus.pendingModeration;
 
         [Column("google_maps_url")]
         [MaxLength(500)]

@@ -17,5 +17,8 @@ namespace ContentService.Application.Features.Routes.Queries.GetRoutes
         public int FavoritesCount { get; set; }
 
         public string? CoverImageExtension { get; set; }
+
+        public IReadOnlyCollection<string> Tags { get; set; }= [];
+
     }
 }

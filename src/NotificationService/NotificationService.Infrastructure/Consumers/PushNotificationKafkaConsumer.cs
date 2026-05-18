@@ -1,6 +1,7 @@
 ﻿using Confluent.Kafka;
 using Mapster;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NotificationService.Application.DTOs;
@@ -13,14 +14,13 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
-using Microsoft.Extensions.Configuration;
 
 namespace NotificationService.Infrastructure.Consumers
 {
     public class PushNotificationKafkaConsumer : BackgroundService
     {
         private readonly IConsumer<string, string> _consumer;
-        private readonly INotificationRepository _repository;
+        private readonly IServiceScopeFactory _scopeFactory;
         private readonly IDeadLetterQueueService _dlqService;
         private readonly IEventNotificationFactory _notificationFactory;
         private readonly ILogger<PushNotificationKafkaConsumer> _logger;
@@ -28,8 +28,8 @@ namespace NotificationService.Infrastructure.Consumers
         private readonly JsonSerializerOptions _jsonOptions;
 
         public PushNotificationKafkaConsumer(
-           ConsumerConfig config,
-            INotificationRepository repository,
+            ConsumerConfig config,
+            IServiceScopeFactory scopeFactory,
             IDeadLetterQueueService dlqService,
             IEventNotificationFactory notificationFactory,
             ILogger<PushNotificationKafkaConsumer> logger,
@@ -39,7 +39,7 @@ namespace NotificationService.Infrastructure.Consumers
                .GetChildren()
                .Select(c => c.Value)
                .ToArray()
-           ?? new[] { "user.events", "content.events" };
+           ?? new[] { "user.favorites", "content.routes" };
 
             config.GroupId = "notification-service-consumer";
             config.EnableAutoCommit = false;
@@ -52,7 +52,7 @@ namespace NotificationService.Infrastructure.Consumers
                 .SetErrorHandler((_, e) => logger.LogError("Kafka Error: {Reason}", e.Reason))
                 .Build();
 
-            _repository = repository;
+            _scopeFactory = scopeFactory;
             _dlqService = dlqService;
             _notificationFactory = notificationFactory;
             _logger = logger;
@@ -96,16 +96,24 @@ namespace NotificationService.Infrastructure.Consumers
             var offset = result.TopicPartitionOffset;
             var topic = result.Topic;
 
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                _logger.LogWarning("Empty message at offset {Offset}. Skipping.", offset);
+                _consumer.Commit(result);
+                return;
+            }
+
             try
             {
-                var notification = topic switch
+                var notifications = topic switch
                 {
-                    var t when t.StartsWith("user") => ParseUserEvent(value),
-                    var t when t.StartsWith("content") => ParseContentEvent(value),
+                    var t when t.Contains("favorites") => ParseFavoriteEvent(value),
+                    var t when t.Contains("content") => ParseContentEvent(value),
+                    var t when t.Contains("moderation") => ParseModerationEvent(value),
                     _ => null
                 };
 
-                if (notification == null)
+                if (notifications == null)
                 {
                     _logger.LogWarning("Unknown topic or invalid event type: {Topic}", topic);
                     await _dlqService.SendToDlqAsync(value, $"Unknown topic or invalid event type: {topic}", ct);
@@ -113,21 +121,36 @@ namespace NotificationService.Infrastructure.Consumers
                     return;
                 }
 
-                await _repository.AddAsync(notification, ct);
-                await _repository.AddLogAsync(new NotificationLog
+                if (notifications == null || notifications.Count == 0)
                 {
-                    Id = Guid.NewGuid(),
-                    NotificationId = notification.Id,
-                    Provider = "Kafka",
-                    Status = "Received",
-                    ErrorMessage = null,
-                    CreatedAt = DateTime.UtcNow
-                }, ct);
+                    _logger.LogWarning("Factory returned empty list for topic {Topic}. Event type might be unsupported.", topic);
+                    await _dlqService.SendToDlqAsync(value, $"Factory returned empty: {topic}", ct);
+                    _consumer.Commit(result);
+                    return;
+                }
 
-                await _repository.SaveChangesAsync(ct);
+
+                await using var scope = _scopeFactory.CreateAsyncScope();
+                var repository = scope.ServiceProvider.GetRequiredService<INotificationRepository>();
+
+                foreach (var notification in notifications)
+                {
+                    await repository.AddAsync(notification, ct);
+                    await repository.AddLogAsync(new NotificationLog
+                    {
+                        Id = Guid.NewGuid(),
+                        NotificationId = notification.Id,
+                        Provider = "Kafka",
+                        Status = "Received",
+                        ErrorMessage = null,
+                        CreatedAt = DateTime.UtcNow
+                    }, ct);
+                }
+
+                await repository.SaveChangesAsync(ct);
                 _consumer.Commit(result);
 
-                _logger.LogInformation("Notification saved. UserId: {UserId}, Type: {Type}", notification.UserId, notification.Type);
+                _logger.LogInformation("Batch processed. Created {Count} notification(s) from topic {Topic}", notifications.Count, topic);
             }
             catch (Exception ex)
             {
@@ -137,21 +160,27 @@ namespace NotificationService.Infrastructure.Consumers
             }
         }
 
-        private Notification? ParseUserEvent(string value)
+        private List<Notification> ParseFavoriteEvent(string value)
         {
-            var dto = JsonSerializer.Deserialize<UserEventDto>(value, _jsonOptions);
-            return dto == null ? null : _notificationFactory.CreateFromUserEvent(dto);
+            var dto = JsonSerializer.Deserialize<FavoriteEventDto>(value, _jsonOptions);
+            return dto == null ? null : _notificationFactory.CreateFromFavoriteEvent(dto);
         }
 
-        private Notification? ParseContentEvent(string value)
+        private List<Notification> ParseContentEvent(string value)
         {
             var dto = JsonSerializer.Deserialize<ContentEventDto>(value, _jsonOptions);
             return dto == null ? null : _notificationFactory.CreateFromContentEvent(dto);
         }
 
+        private List<Notification> ParseModerationEvent(string value)
+        {
+            var dto = JsonSerializer.Deserialize<ModerationEventDto>(value, _jsonOptions);
+            return dto == null ? new() : _notificationFactory.CreateFromModerationEvent(dto);
+        }
+
         public override async Task StopAsync(CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Остановка consumer");
+            _logger.LogInformation("Stopping consumer");
             _consumer.Close();
             await base.StopAsync(cancellationToken);
         }
