@@ -4,6 +4,7 @@ using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using ContentService.Application.Interfaces;
 
 namespace ContentService.Application.Features.Files.Commands.UploadAudioFile
 {
@@ -11,11 +12,14 @@ namespace ContentService.Application.Features.Files.Commands.UploadAudioFile
     {
         private readonly IAudioFileRepository _audioRepository;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IFileStorageService _fileStorageService;
+        private readonly string _bucketName = "content-files";
 
-        public UploadAudioFileCommandHandler(IAudioFileRepository audioRepository, IUnitOfWork unitOfWork)
+        public UploadAudioFileCommandHandler(IAudioFileRepository audioRepository, IUnitOfWork unitOfWork, IFileStorageService fileStorageService)
         {
             _audioRepository = audioRepository;
             _unitOfWork = unitOfWork;
+            _fileStorageService = fileStorageService;
         }
 
         public async Task<UploadAudioFileResponse> Handle(UploadAudioFileCommand request, CancellationToken cancellationToken)
@@ -23,14 +27,18 @@ namespace ContentService.Application.Features.Files.Commands.UploadAudioFile
             var extension = Path
                 .GetExtension(request.File.FileName)
                 .Replace(".", "");
-
+            
+            await _fileStorageService.UploadFileAsync(request.File.OpenReadStream(), request.File.Name, extension, cancellationToken);
+            var filePath = _bucketName + "/" + request.File.FileName;
+            
             var audio = new AudioFile
             {
                 Id = Guid.NewGuid(),
                 RouteId = request.RouteId,
                 FileExtension = extension,
                 OriginalFilename = request.File.FileName,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                Path =  filePath
             };
 
             await _audioRepository.AddAsync(audio, cancellationToken);

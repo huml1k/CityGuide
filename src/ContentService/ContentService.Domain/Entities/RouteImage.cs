@@ -16,6 +16,9 @@ namespace ContentService.Domain.Entities
         [Column("route_id")]
         public Guid RouteId { get; set; }
 
+        [Column("path")]
+        [Required]
+        public string Path { get; set; }
         
         [Column("file_extension")]
         [MaxLength(5)]
