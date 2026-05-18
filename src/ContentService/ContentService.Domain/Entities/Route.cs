@@ -27,6 +27,10 @@ namespace ContentService.Domain.Entities
         [Column("duration_minutes")]
         public int DurationMinutes { get; set; }
 
+        [Column("status")]
+        [MaxLength(50)]
+        public string Status { get; set; } = "draft";
+
         [Column("google_maps_url")]
         [MaxLength(500)]
         public string? GoogleMapsUrl { get; set; }
