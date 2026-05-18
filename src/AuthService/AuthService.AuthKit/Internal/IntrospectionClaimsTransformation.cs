@@ -35,7 +35,7 @@ internal sealed class IntrospectionClaimsTransformation : IClaimsTransformation
             return principal;
         }
 
-        var token = principal.FindFirst("raw_access_token")?.Value;
+        var token = principal.FindFirst("Authorization")?.Value;
         if (string.IsNullOrWhiteSpace(token))
         {
             return principal;
