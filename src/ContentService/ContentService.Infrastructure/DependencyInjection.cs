@@ -8,6 +8,8 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using ContentService.Application.Interfaces;
+using ContentService.Infrastructure.MinIo;
 
 namespace ContentService.Infrastructure
 {
@@ -26,6 +28,8 @@ namespace ContentService.Infrastructure
             services.AddScoped<ITagRepository, TagRepository>();
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
+            
+            services.AddScoped<IFileStorageService, MinIoFileStorage>();
 
             //Redis
             //MinIO
