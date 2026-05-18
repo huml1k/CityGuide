@@ -4,20 +4,25 @@ using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using ContentService.Application.Interfaces;
 
 namespace ContentService.Application.Features.Files.Commands.UploadRouteImage
 {
     public class UploadRouteImageCommandHandler : IRequestHandler<UploadRouteImageCommand, UploadRouteImageResponse>
     {
         private readonly IRouteImageRepository _imageRepository;
+        private readonly IFileStorageService _fileStorageService;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly string _bucketName = "content-files";
 
         public UploadRouteImageCommandHandler(
             IRouteImageRepository imageRepository,
-            IUnitOfWork unitOfWork)
+            IUnitOfWork unitOfWork,
+            IFileStorageService fileStorageService)
         {
             _imageRepository = imageRepository;
             _unitOfWork = unitOfWork;
+            _fileStorageService = fileStorageService;
         }
 
         public async Task<UploadRouteImageResponse> Handle(UploadRouteImageCommand request, CancellationToken cancellationToken)
@@ -25,7 +30,10 @@ namespace ContentService.Application.Features.Files.Commands.UploadRouteImage
             var extension = Path
                 .GetExtension(request.File.FileName)
                 .Replace(".", "");
-
+            
+            await _fileStorageService.UploadFileAsync(request.File.OpenReadStream(), request.File.Name, extension, cancellationToken);
+            var filePath = _bucketName + "/" + request.File.FileName;
+            
             var image = new RouteImage
             {
                 Id = Guid.NewGuid(),
@@ -33,7 +41,8 @@ namespace ContentService.Application.Features.Files.Commands.UploadRouteImage
                 FileExtension = extension,
                 IsCover = request.IsCover,
                 OrderIndex = request.OrderIndex,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                Path = filePath
             };
 
             await _imageRepository.AddAsync(
