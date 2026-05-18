@@ -10,5 +10,6 @@ namespace NotificationService.Application.Services.Interface
     {
         public List<Notification?> CreateFromFavoriteEvent(FavoriteEventDto dto);
         public List<Notification?> CreateFromContentEvent(ContentEventDto dto);
+        public List<Notification> CreateFromModerationEvent(ModerationEventDto dto)
     }
 }
