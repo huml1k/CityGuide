@@ -12,9 +12,18 @@ namespace ContentService.Application.Features.Files.Commands.UploadAudioFile
             RuleFor(x => x.RouteId)
                 .NotEmpty();
 
+            
             RuleFor(x => x.File)
                 .NotNull();
 
+            RuleFor(x => x.File)
+                .NotNull()
+                .Must(file => 
+                {
+                    var extension = Path.GetExtension(file.FileName);
+                    return new[] { ".mp3", ".ogg", }.Contains(extension.ToLower());
+                })
+                .WithMessage("Only .mp3 and .ogg files are allowed.");
         }
     }
 }
