@@ -15,6 +15,15 @@ namespace ContentService.Application.Features.Files.Commands.UploadRouteImage
             RuleFor(x => x.File)
                 .NotNull();
 
+            RuleFor(x => x.File)
+                .NotNull()
+                .Must(file => 
+                {
+                    var extension = Path.GetExtension(file.FileName);
+                    return new[] { ".jpg", ".jpeg", ".png" }.Contains(extension.ToLower());
+                })
+                .WithMessage("Only .jpg, .jpeg, and .png files are allowed.");
+            
             RuleFor(x => x.OrderIndex)
                 .GreaterThanOrEqualTo(0);
         }
