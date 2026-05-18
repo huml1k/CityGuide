@@ -1,6 +1,7 @@
 using System.Text;
 using AuthService.Application;
 using AuthService.Application.Models;
+using AuthService.AuthKit;
 using AuthService.Infrastructure;
 using AuthService.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -11,7 +12,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGenWithBearerAuth();
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddAuthorization();

@@ -19,7 +19,7 @@ builder.Services.AddControllers();
 builder.Services.AddCityGuideServiceAuth(builder.Configuration);
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGenWithBearerAuth();
 
 builder.Services.AddNotificationApplication();
 builder.Services.AddNotificationInfrastructure(builder.Configuration);

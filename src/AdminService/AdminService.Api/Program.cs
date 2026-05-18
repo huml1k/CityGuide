@@ -11,7 +11,7 @@ builder.Services.AddControllers();
 builder.Services.AddCityGuideServiceAuth(builder.Configuration);
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGenWithBearerAuth();
 
 builder.Services.Configure<CityGuideServicesOptions>(
     builder.Configuration.GetSection(CityGuideServicesOptions.SectionName));
