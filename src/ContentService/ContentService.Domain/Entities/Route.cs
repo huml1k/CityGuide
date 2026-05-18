@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ContentService.Domain.Enums;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -29,7 +30,7 @@ namespace ContentService.Domain.Entities
 
         [Column("status")]
         [MaxLength(50)]
-        public string Status { get; set; } = "draft";
+        public RouteStatus Status { get; set; }
 
         [Column("google_maps_url")]
         [MaxLength(500)]

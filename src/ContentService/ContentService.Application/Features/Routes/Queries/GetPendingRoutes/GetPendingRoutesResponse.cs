@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace ContentService.Application.Features.Routes.Queries.GetRoutes
+namespace ContentService.Application.Features.Routes.Queries.GetPendingRoutes
 {
-    public class GetRoutesResponse
+    public class GetPendingRoutesResponse
     {
         public Guid Id { get; set; }
 

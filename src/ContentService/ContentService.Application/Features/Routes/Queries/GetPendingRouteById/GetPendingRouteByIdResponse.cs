@@ -4,9 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace ContentService.Application.Features.Routes.Queries.GetRouteById
+namespace ContentService.Application.Features.Routes.Queries.GetPendingRouteById
 {
-    public class GetRouteByIdResponse
+    public class GetPendingRouteByIdResponse
     {
         public Guid Id { get; set; }
 

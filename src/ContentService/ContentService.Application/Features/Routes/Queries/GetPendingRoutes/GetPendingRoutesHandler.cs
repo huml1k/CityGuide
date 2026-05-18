@@ -4,23 +4,22 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace ContentService.Application.Features.Routes.Queries.GetRoutes
+namespace ContentService.Application.Features.Routes.Queries.GetPendingRoutes
 {
-    public class GetRoutesHandler : IRequestHandler<GetRoutesQuery,IReadOnlyCollection<GetRoutesResponse>>
+    public class GetPendingRoutesHandler : IRequestHandler<GetPendingRoutesQuery,IReadOnlyCollection<GetPendingRoutesResponse>>
     {
         private readonly IRouteRepository _routeRepository;
-        public GetRoutesHandler(IRouteRepository routeRepository)
+        public GetPendingRoutesHandler(IRouteRepository routeRepository)
         {
             _routeRepository = routeRepository;
         }
 
-        public async Task<IReadOnlyCollection<GetRoutesResponse>> Handle(GetRoutesQuery request, CancellationToken cancellationToken)
+        public async Task<IReadOnlyCollection<GetPendingRoutesResponse>> Handle(GetPendingRoutesQuery request, CancellationToken cancellationToken)
         {
-            var routes = await _routeRepository
-                .GetApprovedAsync(cancellationToken);
+            var routes = await _routeRepository.GetPendingModerationAsync(cancellationToken);
 
             return routes
-                .Select(route => new GetRoutesResponse
+                .Select(route => new GetPendingRoutesResponse
                 {
                     Id = route.Id,
                     Title = route.Title,

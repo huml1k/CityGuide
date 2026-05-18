@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using ContentService.Domain.Enums;
+using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -14,8 +15,6 @@ namespace ContentService.Application.Features.Routes.Commands.CreateRoute
         public string? Description { get; set; }
 
         public int DurationMinutes { get; set; }
-
-        public decimal Price { get; set; }
 
         public string? GoogleMapsUrl { get; set; }
     }

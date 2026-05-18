@@ -6,30 +6,27 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace ContentService.Application.Features.Routes.Queries.GetRouteById
+namespace ContentService.Application.Features.Routes.Queries.GetPendingRouteById
 {
-    public class GetRouteByIdHandler : IRequestHandler<GetRouteByIdQuery, GetRouteByIdResponse>
+    public class GetPendingRouteByIdHandler : IRequestHandler<GetPendingRouteByIdQuery, GetPendingRouteByIdResponse>
     {
         private readonly IRouteRepository _routeRepository;
 
-        public GetRouteByIdHandler(IRouteRepository routeRepository)
+        public GetPendingRouteByIdHandler(IRouteRepository routeRepository)
         {
             _routeRepository = routeRepository;
         }
 
-        public async Task<GetRouteByIdResponse> Handle(GetRouteByIdQuery request, CancellationToken cancellationToken)
+        public async Task<GetPendingRouteByIdResponse> Handle(GetPendingRouteByIdQuery request, CancellationToken cancellationToken)
         {
-            var route = await _routeRepository
-                .GetApprovedByIdAsync(
-                    request.RouteId,
-                    cancellationToken);
+            var route = await _routeRepository.GetPendingModerationByIdAsync(request.RouteId,cancellationToken);
 
             if (route is null)
             {
                 throw new Exception("Route not found");
             }
 
-            return new GetRouteByIdResponse
+            return new GetPendingRouteByIdResponse
             {
                 Id = route.Id,
                 CreatorId = route.CreatorId,

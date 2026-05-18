@@ -1,4 +1,5 @@
 ﻿using ContentService.Domain.Entities;
+using ContentService.Domain.Enums;
 using ContentService.Domain.Interfaces.Repositories;
 using ContentService.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -86,6 +87,58 @@ namespace ContentService.Infrastructure.Repositories
                     x.RouteTags.Any(t =>
                         t.Tag.Name.Contains(search)))
                 .ToListAsync(cancellationToken);
+        }
+
+        public async Task<IReadOnlyCollection<Route>> GetApprovedAsync( CancellationToken cancellationToken)
+        {
+            return await _context.Routes
+                .Include(x => x.RouteStats)
+                .Include(x => x.RouteImages)
+                .Include(x => x.RouteTags)
+                    .ThenInclude(x => x.Tag)
+                .Where(x => x.Status == RouteStatus.approved)
+                .ToListAsync(cancellationToken);
+        }
+
+        public async Task<Route?> GetApprovedByIdAsync(Guid routeId, CancellationToken cancellationToken)
+        {
+            return await _context.Routes
+                .Include(x => x.RouteStats)
+                .Include(x => x.RouteImages)
+                .Include(x => x.RoutePoints)
+                .Include(x => x.AudioFiles)
+                .Include(x => x.RouteTags)
+                    .ThenInclude(x => x.Tag)
+                .FirstOrDefaultAsync(
+                    x => x.Id == routeId &&
+                         x.Status == RouteStatus.approved,
+                    cancellationToken);
+        }
+
+        public async Task<IReadOnlyCollection<Route>> GetPendingModerationAsync(CancellationToken cancellationToken)
+        {
+            return await _context.Routes
+                .Include(x => x.RouteStats)
+                .Include(x => x.RouteImages)
+                .Include(x => x.RouteTags)
+                    .ThenInclude(x => x.Tag)
+                .Where(x => x.Status == RouteStatus.pendingModeration)
+                .ToListAsync(cancellationToken);
+        }
+
+        public async Task<Route?> GetPendingModerationByIdAsync(Guid routeId, CancellationToken cancellationToken)
+        {
+            return await _context.Routes
+                .Include(x => x.RouteStats)
+                .Include(x => x.RouteImages)
+                .Include(x => x.RoutePoints)
+                .Include(x => x.AudioFiles)
+                .Include(x => x.RouteTags)
+                    .ThenInclude(x => x.Tag)
+                .FirstOrDefaultAsync(
+                    x => x.Id == routeId &&
+                         x.Status == RouteStatus.pendingModeration,
+                    cancellationToken);
         }
     }
 }

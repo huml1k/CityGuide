@@ -80,5 +80,13 @@ namespace ContentService.Domain.Interfaces.Repositories
         /// Поиск маршрута либо по названию ли бо тэгу.
         /// </summary>
         Task<IReadOnlyCollection<Route>> SearchAsync(string search, CancellationToken cancellationToken = default);
+
+        Task<IReadOnlyCollection<Route>> GetApprovedAsync(CancellationToken cancellationToken);
+
+        Task<Route?> GetApprovedByIdAsync(Guid routeId,  CancellationToken cancellationToken);
+
+        Task<IReadOnlyCollection<Route>> GetPendingModerationAsync(CancellationToken cancellationToken);
+
+        Task<Route?> GetPendingModerationByIdAsync(Guid routeId, CancellationToken cancellationToken);
     }
 }
