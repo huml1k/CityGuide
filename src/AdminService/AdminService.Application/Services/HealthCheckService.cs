@@ -22,16 +22,16 @@ public sealed class HealthCheckService : IHealthCheckService
     ];
 
     private readonly IDatabaseHealthChecker _databaseHealthChecker;
-    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly HttpClient _httpClient;
     private readonly CityGuideServicesOptions _servicesOptions;
 
     public HealthCheckService(
         IDatabaseHealthChecker databaseHealthChecker,
-        IHttpClientFactory httpClientFactory,
+        HttpClient httpClient,
         IOptions<CityGuideServicesOptions> servicesOptions)
     {
         _databaseHealthChecker = databaseHealthChecker;
-        _httpClientFactory = httpClientFactory;
+        _httpClient = httpClient;
         _servicesOptions = servicesOptions.Value;
     }
 
@@ -86,12 +86,11 @@ public sealed class HealthCheckService : IHealthCheckService
         }
 
         var requestUri = BuildRequestUri(baseUrl, healthPath);
-        var client = _httpClientFactory.CreateClient(nameof(HealthCheckService));
         var stopwatch = Stopwatch.StartNew();
 
         try
         {
-            using var response = await client.GetAsync(requestUri, cancellationToken);
+            using var response = await _httpClient.GetAsync(requestUri, cancellationToken);
             stopwatch.Stop();
 
             return new DependencyHealthCheck
