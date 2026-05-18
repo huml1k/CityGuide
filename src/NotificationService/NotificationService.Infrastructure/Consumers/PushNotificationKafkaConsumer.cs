@@ -1,6 +1,7 @@
 ﻿using Confluent.Kafka;
 using Mapster;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NotificationService.Application.DTOs;
@@ -13,14 +14,13 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
-using Microsoft.Extensions.Configuration;
 
 namespace NotificationService.Infrastructure.Consumers
 {
     public class PushNotificationKafkaConsumer : BackgroundService
     {
         private readonly IConsumer<string, string> _consumer;
-        private readonly INotificationRepository _repository;
+        private readonly IServiceScopeFactory _scopeFactory;
         private readonly IDeadLetterQueueService _dlqService;
         private readonly IEventNotificationFactory _notificationFactory;
         private readonly ILogger<PushNotificationKafkaConsumer> _logger;
@@ -29,7 +29,7 @@ namespace NotificationService.Infrastructure.Consumers
 
         public PushNotificationKafkaConsumer(
             ConsumerConfig config,
-            INotificationRepository repository,
+            IServiceScopeFactory scopeFactory,
             IDeadLetterQueueService dlqService,
             IEventNotificationFactory notificationFactory,
             ILogger<PushNotificationKafkaConsumer> logger,
@@ -52,7 +52,7 @@ namespace NotificationService.Infrastructure.Consumers
                 .SetErrorHandler((_, e) => logger.LogError("Kafka Error: {Reason}", e.Reason))
                 .Build();
 
-            _repository = repository;
+            _scopeFactory = scopeFactory;
             _dlqService = dlqService;
             _notificationFactory = notificationFactory;
             _logger = logger;
@@ -130,10 +130,13 @@ namespace NotificationService.Infrastructure.Consumers
                 }
 
 
+                await using var scope = _scopeFactory.CreateAsyncScope();
+                var repository = scope.ServiceProvider.GetRequiredService<INotificationRepository>();
+
                 foreach (var notification in notifications)
                 {
-                    await _repository.AddAsync(notification, ct);
-                    await _repository.AddLogAsync(new NotificationLog
+                    await repository.AddAsync(notification, ct);
+                    await repository.AddLogAsync(new NotificationLog
                     {
                         Id = Guid.NewGuid(),
                         NotificationId = notification.Id,
@@ -143,9 +146,8 @@ namespace NotificationService.Infrastructure.Consumers
                         CreatedAt = DateTime.UtcNow
                     }, ct);
                 }
-               
 
-                await _repository.SaveChangesAsync(ct);
+                await repository.SaveChangesAsync(ct);
                 _consumer.Commit(result);
 
                 _logger.LogInformation("Batch processed. Created {Count} notification(s) from topic {Topic}", notifications.Count, topic);

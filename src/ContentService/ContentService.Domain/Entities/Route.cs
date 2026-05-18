@@ -30,7 +30,7 @@ namespace ContentService.Domain.Entities
 
         [Column("status")]
         [MaxLength(50)]
-        public RouteStatus Status { get; set; }
+        public RouteStatus Status { get; set; } = RouteStatus.pendingModeration;
 
         [Column("google_maps_url")]
         [MaxLength(500)]
