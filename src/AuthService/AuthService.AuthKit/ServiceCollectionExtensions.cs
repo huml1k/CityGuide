@@ -39,7 +39,8 @@ public static class ServiceCollectionExtensions
         this IServiceCollection services,
         CityGuideAuthOptions options)
     {
-        services.AddSingleton(Options.Create(options));
+        services.AddSingleton(options);
+        services.AddSingleton<IOptions<CityGuideAuthOptions>>(_ => Options.Create(options));
         services.AddAuthorization();
 
         services
@@ -83,7 +84,7 @@ public static class ServiceCollectionExtensions
         services.AddHttpContextAccessor();
         services.AddHttpClient<AuthIntrospectionClient>((provider, client) =>
         {
-            var settings = provider.GetRequiredService<IOptions<CityGuideAuthOptions>>().Value;
+            var settings = provider.GetRequiredService<CityGuideAuthOptions>();
             client.BaseAddress = new Uri(settings.IntrospectionBaseUrl);
         });
 

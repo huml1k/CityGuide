@@ -1,5 +1,6 @@
 using System.Net.Http.Json;
 using AuthService.AuthKit.Contracts;
+using Microsoft.Extensions.Options;
 
 namespace AuthService.AuthKit.Internal;
 
@@ -8,10 +9,10 @@ internal sealed class AuthIntrospectionClient
     private readonly HttpClient _httpClient;
     private readonly CityGuideAuthOptions _options;
 
-    public AuthIntrospectionClient(HttpClient httpClient, CityGuideAuthOptions options)
+    public AuthIntrospectionClient(HttpClient httpClient, IOptions<CityGuideAuthOptions> options)
     {
         _httpClient = httpClient;
-        _options = options;
+        _options = options.Value;
     }
 
     public async Task<IntrospectResponse?> IntrospectAsync(string accessToken, CancellationToken cancellationToken)
