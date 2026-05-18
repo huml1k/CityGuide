@@ -109,6 +109,7 @@ namespace NotificationService.Infrastructure.Consumers
                 {
                     var t when t.Contains("favorites") => ParseFavoriteEvent(value),
                     var t when t.Contains("content") => ParseContentEvent(value),
+                    var t when t.Contains("moderation") => ParseModerationEvent(value),
                     _ => null
                 };
 
@@ -167,6 +168,12 @@ namespace NotificationService.Infrastructure.Consumers
         {
             var dto = JsonSerializer.Deserialize<ContentEventDto>(value, _jsonOptions);
             return dto == null ? null : _notificationFactory.CreateFromContentEvent(dto);
+        }
+
+        private List<Notification> ParseModerationEvent(string value)
+        {
+            var dto = JsonSerializer.Deserialize<ModerationEventDto>(value, _jsonOptions);
+            return dto == null ? new() : _notificationFactory.CreateFromModerationEvent(dto);
         }
 
         public override async Task StopAsync(CancellationToken cancellationToken)

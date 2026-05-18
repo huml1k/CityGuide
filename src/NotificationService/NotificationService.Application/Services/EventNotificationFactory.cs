@@ -107,6 +107,47 @@ namespace NotificationService.Application.Services
             return notifications;
         }
 
+        public List<Notification> CreateFromModerationEvent(ModerationEventDto dto)
+        {
+            if (dto?.NewStatus is null) return new();
+
+            var routeName = string.IsNullOrWhiteSpace(dto.RouteTitle) ? $"Маршрут #{dto.RouteId}" : dto.RouteTitle;
+            var notifications = new List<Notification>();
+            var baseDate = dto.Timestamp == default ? DateTime.UtcNow : dto.Timestamp;
+
+            switch (dto.NewStatus.ToLowerInvariant().Trim())
+            {
+                case "approved":
+                    notifications.Add(new Notification
+                    {
+                        Id = Guid.NewGuid(),
+                        UserId = dto.CreatorId,
+                        Type = "RouteApproved",
+                        Title = "Маршрут одобрен модератором",
+                        Message = $"Ваш маршрут «{routeName}» успешно прошел модерацию и доступен пользователям.",
+                        RelatedRouteId = dto.RouteId,
+                        IsRead = false,
+                        CreatedAt = baseDate
+                    });
+                    break;
+                case "rejected":
+                    notifications.Add(new Notification
+                    {
+                        Id = Guid.NewGuid(),
+                        UserId = dto.CreatorId,
+                        Type = "RouteRejected",
+                        Title = "Маршрут отклонен",
+                        Message = $"Ваш маршрут «{routeName}» не прошел модерацию. Причина: {dto.Reason ?? "Нарушение правил публикаций"}.",
+                        RelatedRouteId = dto.RouteId,
+                        IsRead = false,
+                        CreatedAt = baseDate
+                    });
+                    break;
+            }
+
+            return notifications;
+        }
+
         private static Guid ParseEventId(string? eventId)
         {
             return !string.IsNullOrEmpty(eventId) && Guid.TryParse(eventId, out Guid guid)
