@@ -1,3 +1,6 @@
+using AdminService.Application;
+using AdminService.Application.Options;
+using AdminService.Infrastructure;
 using AdminService.Infrastructure.Persistence;
 using AuthService.AuthKit;
 using Microsoft.EntityFrameworkCore;
@@ -9,6 +12,12 @@ builder.Services.AddCityGuideServiceAuth(builder.Configuration);
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.Configure<CityGuideServicesOptions>(
+    builder.Configuration.GetSection(CityGuideServicesOptions.SectionName));
+
+builder.Services.AddAdminApplication();
+builder.Services.AddAdminInfrastructure();
 
 // === EF Core ===
 builder.Services.AddDbContext<AdminDbContext>(options =>
