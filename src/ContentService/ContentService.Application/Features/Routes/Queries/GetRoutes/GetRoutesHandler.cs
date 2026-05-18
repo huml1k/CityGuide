@@ -16,7 +16,8 @@ namespace ContentService.Application.Features.Routes.Queries.GetRoutes
 
         public async Task<IReadOnlyCollection<GetRoutesResponse>> Handle(GetRoutesQuery request, CancellationToken cancellationToken)
         {
-            var routes = await _routeRepository.GetAllAsync(cancellationToken);
+            var routes = await _routeRepository
+                .GetApprovedAsync(cancellationToken);
 
             return routes
                 .Select(route => new GetRoutesResponse
@@ -25,10 +26,17 @@ namespace ContentService.Application.Features.Routes.Queries.GetRoutes
                     Title = route.Title,
                     Description = route.Description,
                     DurationMinutes = route.DurationMinutes,
-                    FavoritesCount = route.RouteStats.FavoritesCount,
+
+                    FavoritesCount =
+                        route.RouteStats?.FavoritesCount ?? 0,
+
                     CoverImageExtension = route.RouteImages
                         .FirstOrDefault(x => x.IsCover)?
-                        .FileExtension
+                        .FileExtension,
+
+                    Tags = route.RouteTags
+                        .Select(x => x.Tag.Name)
+                        .ToList()
                 })
                 .ToList();
         }

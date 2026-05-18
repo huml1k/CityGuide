@@ -22,10 +22,14 @@ namespace ContentService.Application.Features.Routes.Queries.GetRouteById
 
         public string? GoogleMapsUrl { get; set; }
 
+        public IReadOnlyCollection<AudioFileDto> AudioFiles { get; set; }
+
         public DateTime CreatedAt { get; set; }
 
         public List<RoutePointDto> Points { get; set; } = [];
 
         public List<RouteImageDto> Images { get; set; } = [];
+
+        public IReadOnlyCollection<string> Tags { get; set; } = [];
     }
 }

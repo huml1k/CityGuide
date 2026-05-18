@@ -1,4 +1,5 @@
-﻿using ContentService.Application.Features.Routes.DTOs;
+﻿using ContentService.Application.DTOs;
+using ContentService.Application.Features.Routes.DTOs;
 using ContentService.Domain.Interfaces.Repositories;
 using MediatR;
 using System;
@@ -18,7 +19,10 @@ namespace ContentService.Application.Features.Routes.Queries.GetRouteById
 
         public async Task<GetRouteByIdResponse> Handle(GetRouteByIdQuery request, CancellationToken cancellationToken)
         {
-            var route = await _routeRepository.GetFullRouteByIdAsync(request.RouteId,cancellationToken);
+            var route = await _routeRepository
+                .GetApprovedByIdAsync(
+                    request.RouteId,
+                    cancellationToken);
 
             if (route is null)
             {
@@ -34,7 +38,25 @@ namespace ContentService.Application.Features.Routes.Queries.GetRouteById
                 DurationMinutes = route.DurationMinutes,
                 GoogleMapsUrl = route.GoogleMapsUrl,
                 CreatedAt = route.CreatedAt,
-                FavoritesCount = route.RouteStats.FavoritesCount,
+
+                FavoritesCount =
+                    route.RouteStats?.FavoritesCount ?? 0,
+
+                Tags = route.RouteTags
+                    .Select(x => x.Tag.Name)
+                    .ToList(),
+                
+                AudioFiles = route.AudioFiles
+                    .Select(x => new AudioFileDto
+                    {
+                        Id = x.Id,
+                        FileExtension = x.FileExtension,
+                        DurationSeconds = x.DurationSeconds,
+                        OrderIndex = x.OrderIndex,
+                        OriginalFilename = x.OriginalFilename
+                    })
+                    .ToList(),
+
 
                 Points = route.RoutePoints
                     .Select(x => new RoutePointDto
