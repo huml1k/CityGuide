@@ -1,7 +1,9 @@
 using AuthService.AuthKit;
-using Microsoft.EntityFrameworkCore;
-using ContentService.Infrastructure.Persistence;
+using ContentService.Application.Features.Routes.Commands.CreateRoute;
 using ContentService.Infrastructure;
+using ContentService.Application;
+using ContentService.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +14,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGenWithBearerAuth();
 
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddApplication();
 
 var app = builder.Build();
 
@@ -21,12 +24,12 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-//using (var scope = app.Services.CreateScope())
-//{
-//    var db = scope.ServiceProvider.GetRequiredService<ContentDbContext>();
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<ContentDbContext>();
 
-//    db.Database.Migrate();
-//}
+    db.Database.Migrate();
+}
 
 app.UseAuthentication();
 app.UseAuthorization();
