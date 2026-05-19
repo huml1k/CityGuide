@@ -8,5 +8,6 @@ namespace ContentService.Application.Features.Files.Queries.GetRouteImage
     public class GetRouteImageQuery : IRequest<GetRouteImageResponse>
     {
         public Guid ImageId { get; set; }
+        public int? ExpiryMinutes { get; set; }
     }
 }
