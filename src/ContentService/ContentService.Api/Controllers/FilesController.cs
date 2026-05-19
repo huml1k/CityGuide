@@ -12,7 +12,7 @@ namespace ContentService.Api.Controllers
 {
     [ApiController]
     [Route("api/files")]
-    [Authorize]
+    //[Authorize]
     public class FilesController : Controller
     {
         private readonly IMediator _mediator;

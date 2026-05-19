@@ -13,7 +13,7 @@ namespace ContentService.Api.Controllers
 {
     [ApiController]
     [Route("api/routes")]
-    [Authorize]
+    //[Authorize]
     public class RoutesController : Controller
     {
         private IMediator _mediator;

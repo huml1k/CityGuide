@@ -6,7 +6,7 @@ namespace UserService.Api.Controller;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize] // Важно: требует авторизации
+//[Authorize] // Важно: требует авторизации
 public class FavoritesController : ControllerBase
 {
     private readonly IFavoriteService _favoriteService;

@@ -10,7 +10,7 @@ namespace ContentService.Api.Controllers
 {
     [ApiController]
     [Route("internal/routes")]
-    [Authorize(Roles = "Admin")]
+    //[Authorize(Roles = "Admin")]
     public class InternalRoutesController : ControllerBase
     {
         private readonly IMediator _mediator;

@@ -23,6 +23,8 @@ namespace ContentService.Infrastructure
 
             services.AddScoped<IAudioFileRepository, AudioFileRepository>();
 
+            services.AddScoped<IRouteStatsRepository, RouteStatsRepository>();
+
             services.AddScoped<IRouteImageRepository, RouteImageRepository>();
 
             services.AddScoped<ITagRepository, TagRepository>();

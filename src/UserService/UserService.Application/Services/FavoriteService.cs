@@ -1,6 +1,7 @@
-﻿using System.Security.Claims;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using System.Security.Claims;
+using UserService.Application.Interfaces.Clients;
 using UserService.Application.Interfaces.Service;
 using UserService.Domain.Entities;
 using UserService.Domain.Interfaces;
@@ -11,15 +12,18 @@ public class FavoriteService : IFavoriteService
 {
     private readonly IFavoritesRepository _favoriteRepository;
     private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly IContentServiceClient _contentServiceClient;
     private readonly ILogger<FavoriteService> _logger;
     
     public FavoriteService(
         IFavoritesRepository favoriteRepository,
         IHttpContextAccessor httpContextAccessor,
+        IContentServiceClient contentServiceClient,
         ILogger<FavoriteService> logger)
     {
         _favoriteRepository = favoriteRepository;
         _httpContextAccessor = httpContextAccessor;
+        _contentServiceClient = contentServiceClient;
         _logger = logger;
     }
     public async Task<Guid> AddFavoriteAsync(Guid routeId, CancellationToken cancellationToken = default)
@@ -38,8 +42,10 @@ public class FavoriteService : IFavoriteService
         };
         
         await _favoriteRepository.AddFavoriteAsync(favorite, cancellationToken);
-        
-        _logger.LogInformation("User {UserId} added route {RouteId} to favorites", userId, routeId);
+
+        await _contentServiceClient.IncrementFavoritesAsync(routeId);
+
+        _logger.LogInformation($"User {userId} added route {routeId} to favorites", userId, routeId);
         
         return favorite.Id;
     }
@@ -52,14 +58,16 @@ public class FavoriteService : IFavoriteService
         
         if (favorite == null)
         {
-            _logger.LogWarning("Favorite not found for user {UserId} and route {RouteId}", userId, routeId);
+            _logger.LogWarning($"Favorite not found for user {userId} and route {routeId}", userId, routeId);
             return;
         }
         
         _favoriteRepository.Delete(favorite);
         //await _favoriteRepository.SaveChangesAsync(cancellationToken);
-        
-        _logger.LogInformation("User {UserId} removed route {RouteId} from favorites", userId, routeId);
+
+        await _contentServiceClient.DecrementFavoritesAsync(routeId);
+
+        _logger.LogInformation($"User {userId} removed route {routeId} from favorites", userId, routeId);
     }
 
     public async Task<bool> IsFavoriteAsync(Guid routeId, CancellationToken cancellationToken = default)

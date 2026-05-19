@@ -7,6 +7,7 @@ using UserService.Application.Services;
 using UserService.Domain.Interfaces;
 using UserService.Infrastructure.Persistence;
 using UserService.Infrastructure.Repositories;
+using UserService.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +17,7 @@ builder.Services.AddCityGuideServiceAuth(builder.Configuration);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGenWithBearerAuth();
 
+builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddSingleton<IEventPublisher, KafkaEventPublisher>();
 
 builder.Services.AddSingleton<IProducer<string, string>>(sp =>
