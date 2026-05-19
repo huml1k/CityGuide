@@ -6,10 +6,9 @@ namespace ContentService.Application.Features.Files.Queries.GetAudioFile
 {
     public class GetAudioFileResponse
     {
-        public Stream Stream { get; set; } = null!;
-
-        public string ContentType { get; set; } = string.Empty;
-
+        public string Url { get; set; } = string.Empty;
+        public DateTime ExpiresAt { get; set; }
         public string FileName { get; set; } = string.Empty;
+        public string ContentType { get; set; } = string.Empty;
     }
 }

@@ -8,5 +8,6 @@ namespace ContentService.Application.Features.Files.Queries.GetAudioFile
     public class GetAudioFileQuery : IRequest<GetAudioFileResponse>
     {
         public Guid AudioFileId { get; set; }
+        public int? ExpiryMinutes { get; set; }
     }
 }

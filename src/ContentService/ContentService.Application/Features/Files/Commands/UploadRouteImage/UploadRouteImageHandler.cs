@@ -5,52 +5,61 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using ContentService.Application.Interfaces;
+using Microsoft.Extensions.Logging;
 
 namespace ContentService.Application.Features.Files.Commands.UploadRouteImage
 {
     public class UploadRouteImageCommandHandler : IRequestHandler<UploadRouteImageCommand, UploadRouteImageResponse>
     {
         private readonly IRouteImageRepository _imageRepository;
+        private readonly IRouteRepository _routeRepository;
         private readonly IFileStorageService _fileStorageService;
         private readonly IUnitOfWork _unitOfWork;
         private readonly string _bucketName = "content-files";
+        private readonly ILogger<UploadRouteImageCommandHandler> _logger;
 
         public UploadRouteImageCommandHandler(
             IRouteImageRepository imageRepository,
             IUnitOfWork unitOfWork,
-            IFileStorageService fileStorageService)
+            IFileStorageService fileStorageService,
+            ILogger<UploadRouteImageCommandHandler> logger,
+            IRouteRepository routeRepository)
         {
             _imageRepository = imageRepository;
             _unitOfWork = unitOfWork;
             _fileStorageService = fileStorageService;
+            _logger = logger;
+            _routeRepository = routeRepository;
         }
 
         public async Task<UploadRouteImageResponse> Handle(UploadRouteImageCommand request, CancellationToken cancellationToken)
         {
-            var extension = Path
-                .GetExtension(request.File.FileName)
-                .Replace(".", "");
-            
-            await _fileStorageService.UploadFileAsync(request.File.OpenReadStream(), request.File.Name, extension, cancellationToken);
-            var filePath = _bucketName + "/" + request.File.FileName;
+            var extension = Path.GetExtension(request.File.FileName);
+            if (!await _routeRepository.ExistsAsync(request.RouteId, cancellationToken))
+                throw new Exception("Path does not exist");
             
             var image = new RouteImage
             {
                 Id = Guid.NewGuid(),
                 RouteId = request.RouteId,
-                FileExtension = extension,
-                IsCover = request.IsCover,
-                OrderIndex = request.OrderIndex,
+                IsCover =  request.IsCover,
+                FileExtension = extension.TrimStart('.'),
                 CreatedAt = DateTime.UtcNow,
-                Path = filePath
+                OrderIndex =  request.OrderIndex,
             };
-
-            await _imageRepository.AddAsync(
-                image,
+            
+            var objectKey = $"{image.Id}{extension}";
+            
+            await _fileStorageService.UploadFileAsync(
+                request.File.OpenReadStream(),
+                objectKey,
+                request.File.ContentType,
                 cancellationToken);
-
-            await _unitOfWork.SaveChangesAsync(
-                cancellationToken);
+            
+            image.Path = objectKey;
+            
+            await _imageRepository.AddAsync(image, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             return new UploadRouteImageResponse
             {

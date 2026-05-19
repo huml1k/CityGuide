@@ -17,13 +17,10 @@ public class MinIoFileStorage : IFileStorageService
     private readonly IMinioClient _client;
     private readonly int _timeLimitMinutes = 5; 
 
-    public MinIoFileStorage(IOptions<MinIoOptions> options)
+    public MinIoFileStorage(IMinioClient client, IOptions<MinIoOptions> options)
     {
+        _client = client;
         _options = options.Value;
-        _client = new MinioClient()
-            .WithEndpoint(_options.Endpoint)
-            .WithCredentials(_options.AccessKey, _options.SecretKey)
-            .Build();
     }
     
     public async Task<string> UploadFileAsync(Stream stream, string fileName, string contentType, CancellationToken ct = default)

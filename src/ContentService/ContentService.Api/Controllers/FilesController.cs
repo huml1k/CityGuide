@@ -21,10 +21,17 @@ namespace ContentService.Api.Controllers
         {
             _mediator = mediator;
         }
-
-        // upload image
-
+        
+        /// <summary>
+        /// Отправляет файл изображения для указанного пути
+        /// </summary>
+        /// <param name="command">Запрос на создание изображения</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns>Результат</returns>
         [HttpPost("images")]
+        [ProducesResponseType(201)]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(404)]
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> UploadImage([FromForm] UploadRouteImageCommand command, CancellationToken cancellationToken)
         {
@@ -32,10 +39,17 @@ namespace ContentService.Api.Controllers
 
             return Ok(result);
         }
-
-        // upload audio
-
+        
+        /// <summary>
+        /// Отправляет файл аудио для указанного пути
+        /// </summary>
+        /// <param name="command">Запрос на создание аудио</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns>Результат</returns>
         [HttpPost("audio")]
+        [ProducesResponseType(201)]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(404)]
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> UploadAudio([FromForm] UploadAudioFileCommand command, CancellationToken cancellationToken)
         {
@@ -44,8 +58,15 @@ namespace ContentService.Api.Controllers
             return Ok(result);
         }
 
-        // delete image
-
+        /// <summary>
+        /// Удаляет изображение из базы
+        /// </summary>
+        /// <param name="id">Id изображения</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns>Результат</returns>
+        [ProducesResponseType(204)]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(404)]
         [HttpDelete("images/{id:guid}")]
         public async Task<IActionResult> DeleteImage(Guid id, CancellationToken cancellationToken)
         {
@@ -56,8 +77,15 @@ namespace ContentService.Api.Controllers
             return NoContent();
         }
 
-        // delete audio
-
+        /// <summary>
+        /// Удаляет аудио из базы
+        /// </summary>
+        /// <param name="id">Id аудио</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns>Результат</returns>
+        [ProducesResponseType(204)]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(404)]
         [HttpDelete("audio/{id:guid}")]
         public async Task<IActionResult> DeleteAudio(Guid id, CancellationToken cancellationToken)
         {
@@ -68,9 +96,16 @@ namespace ContentService.Api.Controllers
             return NoContent();
         }
 
-        // get image
-
+        /// <summary>
+        /// Запрос на получение изображения
+        /// </summary>
+        /// <param name="id">Id изображения</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns>JSON ответ с данными файла и ссылкой для скачивания</returns>
         [AllowAnonymous]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(404)]
+        [Produces("application/json")]
         [HttpGet("images/{id:guid}")]
         public async Task<IActionResult> GetImage(Guid id, CancellationToken cancellationToken)
         {
@@ -78,12 +113,26 @@ namespace ContentService.Api.Controllers
 
             var result = await _mediator.Send(query, cancellationToken);
 
-            return File(result.Stream, result.ContentType, result.FileName);
+            /*return Ok(new
+            {
+                url = result.Url,
+                expiresAt = result.ExpiresAt,
+                fileName = result.FileName,
+                contentType = result.ContentType
+            });*/
+            return Redirect(result.Url);
         }
 
-        // get audio
-
+        /// <summary>
+        /// Запрос на получение аудио
+        /// </summary>
+        /// <param name="id">Id аудио</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns>JSON ответ с данными файла и ссылкой для скачивания</returns>
         [AllowAnonymous]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(404)]
+        [Produces("application/json")]
         [HttpGet("audio/{id:guid}")]
         public async Task<IActionResult> GetAudio(Guid id, CancellationToken cancellationToken)
         {
@@ -91,7 +140,13 @@ namespace ContentService.Api.Controllers
 
             var result = await _mediator.Send(query, cancellationToken);
 
-            return File(result.Stream, result.ContentType, result.FileName);
+            return Ok(new
+            {
+                url = result.Url,
+                expiresAt = result.ExpiresAt,
+                fileName = result.FileName,
+                contentType = result.ContentType
+            });
         }
     }
 }

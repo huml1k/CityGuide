@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Text;
 using ContentService.Application.Interfaces;
 using ContentService.Infrastructure.MinIo;
+using Minio;
 
 namespace ContentService.Infrastructure
 {
@@ -31,7 +32,7 @@ namespace ContentService.Infrastructure
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             
-            services.AddScoped<IFileStorageService, MinIoFileStorage>();
+            services.AddMinIoStorage(configuration);
 
             //Redis
             //MinIO
