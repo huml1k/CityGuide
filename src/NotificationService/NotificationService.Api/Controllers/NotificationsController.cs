@@ -52,7 +52,7 @@ namespace NotificationService.Api.Controllers
 
         private Guid GetCurrentUserId()
         {
-            var claim = User.FindFirst(ClaimTypes.NameIdentifier);
+            var claim = User.FindFirst("sub");
             if (claim == null || !Guid.TryParse(claim.Value, out var userId))
                 throw new UnauthorizedAccessException("User ID not found in token.");
             return userId;
