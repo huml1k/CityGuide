@@ -29,30 +29,29 @@ namespace ContentService.Application.Features.Files.Commands.UploadAudioFile
 
         public async Task<UploadAudioFileResponse> Handle(UploadAudioFileCommand request, CancellationToken cancellationToken)
         {
-            var extension = Path
-                .GetExtension(request.File.FileName)
-                .Replace(".", "");
-            
+            var extension = Path.GetExtension(request.File.FileName);
             if (!await _routeRepository.ExistsAsync(request.RouteId, cancellationToken))
-            {
-                _logger.LogError($"ERROR: Route with id: {request.RouteId} does not exist in DB");
-                throw new Exception($"ERROR: Route with id: {request.RouteId} does not exist in DB");
-            }
-            await _fileStorageService.UploadFileAsync(request.File.OpenReadStream(), request.File.Name, extension, cancellationToken);
-            var filePath = _bucketName + "/" + request.File.FileName;
+                throw new Exception("Path does not exist");
             
             var audio = new AudioFile
             {
                 Id = Guid.NewGuid(),
                 RouteId = request.RouteId,
-                FileExtension = extension,
-                OriginalFilename = request.File.FileName,
+                FileExtension = extension.TrimStart('.'),
                 CreatedAt = DateTime.UtcNow,
-                Path =  filePath
             };
-
+            
+            var objectKey = $"{audio.Id}{extension}";
+            
+            await _fileStorageService.UploadFileAsync(
+                request.File.OpenReadStream(),
+                objectKey,
+                request.File.ContentType,
+                cancellationToken);
+            
+            audio.Path = objectKey;
+            
             await _audioRepository.AddAsync(audio, cancellationToken);
-
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             return new UploadAudioFileResponse
