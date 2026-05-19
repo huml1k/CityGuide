@@ -24,6 +24,11 @@ namespace ContentService.Application.Features.Files.Commands.UploadRouteImage
                 })
                 .WithMessage("Only .jpg, .jpeg, and .png files are allowed.");
             
+            RuleFor(x => x.File)
+                .NotNull()
+                .Must(file => file.Length <= 10 * 1024 * 1024)
+                .WithMessage("Must be less than 10MB");
+            
             RuleFor(x => x.OrderIndex)
                 .GreaterThanOrEqualTo(0);
         }
