@@ -81,6 +81,8 @@ app.Use(async (context, next) =>
 
 app.UseHttpsRedirection();
 
+app.UseCors("AllowFrontend");
+
 //app.UseAuthentication();
 //app.UseAuthorization();
 

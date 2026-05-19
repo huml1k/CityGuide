@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CityGuide - Профиль Creator</title>
-    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/styles.css">
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
@@ -36,7 +36,7 @@
                 </div>
             </div>
 
-            <a href="../create-route.html"
+            <a href="create-route.html"
                 class="inline-block bg-green-600 text-white px-8 py-4 rounded-2xl font-semibold mb-8 hover:bg-green-700 transition">
                 ➕ Создать новый маршрут
             </a>
@@ -65,145 +65,9 @@
         </div>
     </div>
 
-    <script>
-        const myRoutes = [
-            { title: "Исторический центр Москвы", likes: 124, date: "12 мая 2026" },
-            { title: "Парк Зарядье и Красная площадь", likes: 89, date: "5 мая 2026" },
-        ];
-
-        const container = document.getElementById('myRoutes');
-
-        myRoutes.forEach(route => {
-            const div = document.createElement('div');
-            div.className = "bg-white border border-gray-200 rounded-2xl p-6 hover:shadow-md transition";
-            div.innerHTML = `
-                <h3 class="font-semibold text-lg mb-2">${route.title}</h3>
-                <p class="text-gray-500 text-sm mb-4">❤️ ${route.likes} • ${route.date}</p>
-                <div class="flex gap-3">
-                    <button onclick="editRoute()" 
-                            class="flex-1 bg-blue-100 text-blue-700 py-3 rounded-xl hover:bg-blue-200">
-                        Изменить
-                    </button>
-                    <button onclick="deleteRoute(this)" 
-                            class="flex-1 bg-red-100 text-red-700 py-3 rounded-xl hover:bg-red-200">
-                        Удалить
-                    </button>
-                </div>
-            `;
-            container.appendChild(div);
-        });
-
-        function editRoute() {
-            alert("Открывается редактирование маршрута...");
-        }
-
-        function deleteRoute(btn) {
-            if (confirm("Удалить маршрут?")) {
-                btn.parentElement.parentElement.remove();
-            }
-        }
-
-        let creatorNotifications = [
-            {
-                id: 1,
-                user: "Сергей Иванов",
-                route: "Исторический центр Москвы",
-                time: "1 час назад",
-                action: "added_to_favorites"
-            },
-            {
-                id: 2,
-                user: "Анна Ковалёва",
-                route: "Парк Зарядье и Красная площадь",
-                time: "3 часа назад",
-                action: "added_to_favorites"
-            },
-            {
-                id: 3,
-                user: "Максим Петров",
-                route: "Набережная Невы",
-                time: "вчера",
-                action: "added_to_favorites"
-            },
-            {
-                id: 4,
-                user: "Екатерина Смирнова",
-                route: "Золотое кольцо за 2 дня",
-                time: "2 дня назад",
-                action: "added_to_favorites"
-            },
-            {
-                id: 5,
-                user: "Дмитрий Волков",
-                route: "По следам Пушкина",
-                time: "3 дня назад",
-                action: "added_to_favorites"
-            },
-            {
-                id: 6,
-                user: "Ольга Морозова",
-                route: "Музеи Москвы",
-                time: "4 дня назад",
-                action: "added_to_favorites"
-            }
-        ];
-
-        let displayedCount = 5;
-
-        // Функция рендера уведомлений
-        function renderCreatorNotifications() {
-            const container = document.getElementById('creatorNotifications');
-            container.innerHTML = '';
-
-            const toShow = creatorNotifications.slice(0, displayedCount);
-
-            toShow.forEach(notif => {
-                const div = document.createElement('div');
-                div.className = "p-6 bg-gray-50 hover:bg-gray-100 rounded-2xl transition-all duration-200";
-                div.innerHTML = `
-            <div class="flex gap-4">
-                <div class="text-4xl flex-shrink-0">❤️</div>
-                <div class="flex-1">
-                    <p class="text-gray-700">
-                        <span class="font-semibold text-blue-600">${notif.user}</span> 
-                        добавил в избранное ваш маршрут
-                    </p>
-                    <p class="font-medium mt-1">"${notif.route}"</p>
-                    <p class="text-sm text-gray-500 mt-2">${notif.time}</p>
-                </div>
-            </div>
-        `;
-                container.appendChild(div);
-            });
-
-            // Управление кнопкой "Показать ещё"
-            const loadMoreBtn = document.getElementById('loadMoreCreator');
-            if (creatorNotifications.length > displayedCount) {
-                loadMoreBtn.classList.remove('hidden');
-            } else {
-                loadMoreBtn.classList.add('hidden');
-            }
-        }
-
-        // Загрузить больше уведомлений
-        function loadMoreCreatorNotifications() {
-            displayedCount += 5;
-            renderCreatorNotifications();
-        }
-
-        // Отметить все как прочитанные
-        function markAllAsRead() {
-            if (confirm("Отметить все уведомления как прочитанные?")) {
-                alert("✅ Все уведомления отмечены как прочитанные");
-            }
-        }
-
-        // Инициализация при загрузке страницы
-        document.addEventListener('DOMContentLoaded', () => {
-            renderCreatorNotifications();
-        });
-
-    </script>
+    <script src="../js/api.js"></script>
+    <script src="../js/utils.js"></script>
+    <script src="../js/pages/creator-profile.js"></script>
 </body>
 
 </html>

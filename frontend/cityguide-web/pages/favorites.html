@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CityGuide - Избранное</title>
-    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/styles.css">
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-50">
@@ -43,92 +43,8 @@
         </div>
     </div>
 
-    <script>
-        // Пример данных избранного (в будущем придут с бэкенда)
-        let favorites = [
-            {
-                id: 1,
-                title: "Исторический центр Москвы",
-                duration: "4 часа",
-                tag: "Пеший",
-                likes: 124,
-                image: "https://picsum.photos/id/1015/600/400"
-            },
-            {
-                id: 2,
-                title: "Парк Зарядье и Красная площадь",
-                duration: "3 часа",
-                tag: "Архитектура",
-                likes: 89,
-                image: "https://picsum.photos/id/133/600/400"
-            },
-            {
-                id: 3,
-                title: "Набережная Невы",
-                duration: "5 часов",
-                tag: "Природа",
-                likes: 67,
-                image: "https://picsum.photos/id/201/600/400"
-            }
-        ];
-
-        // Функция создания карточки (аналогичная главной странице)
-        function createFavoriteCard(route) {
-            const card = document.createElement('div');
-            card.className = 'route-card cursor-pointer';
-            card.innerHTML = `
-                <a href="route-detail.html?id=${route.id}" class="block">
-                    <img src="${route.image}" alt="${route.title}" class="w-full h-52 object-cover">
-                    <div class="p-5">
-                        <h3 class="font-semibold text-lg leading-tight mb-3">${route.title}</h3>
-                        
-                        <div class="flex items-center gap-4 text-sm text-gray-600 mb-4">
-                            <div class="flex items-center gap-1">
-                                <span>⏱</span>
-                                <span>${route.duration}</span>
-                            </div>
-                            <div class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
-                                ${route.tag}
-                            </div>
-                        </div>
-
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-1 text-gray-600">
-                                <span class="text-xl">❤️</span>
-                                <span>${route.likes}</span>
-                            </div>
-                            <span class="text-blue-600 font-medium text-sm">Подробнее →</span>
-                        </div>
-                    </div>
-                </a>
-            `;
-            return card;
-        }
-
-        // Рендер избранного
-        function renderFavorites() {
-            const container = document.getElementById('favoritesContainer');
-            const emptyState = document.getElementById('emptyState');
-            const countEl = document.getElementById('favoritesCount');
-
-            container.innerHTML = '';
-
-            if (favorites.length === 0) {
-                emptyState.classList.remove('hidden');
-                countEl.textContent = "0 маршрутов";
-                return;
-            }
-
-            emptyState.classList.add('hidden');
-            countEl.textContent = `${favorites.length} маршрут${favorites.length === 1 ? '' : 'ов'}`;
-
-            favorites.forEach(route => {
-                container.appendChild(createFavoriteCard(route));
-            });
-        }
-
-        // Запуск при загрузке
-        document.addEventListener('DOMContentLoaded', renderFavorites);
-    </script>
+    <script src="../js/api.js"></script>
+    <script src="../js/utils.js"></script>
+    <script src="../js/pages/favorites.js"></script>
 </body>
 </html>

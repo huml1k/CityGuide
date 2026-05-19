@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CityGuide - Профиль</title>
-    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/styles.css">
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-50">
@@ -26,17 +26,19 @@
                     👤
                 </div>
                 <div class="flex-1">
+                    <label class="block text-sm text-gray-600 mb-1">Email</label>
+                    <p id="userEmail" class="text-gray-700 mb-3"></p>
                     <label class="block text-sm text-gray-600 mb-1">Имя</label>
-                    <input id="userName" type="text" 
+                    <input id="userName" type="text"
                            class="w-full px-5 py-3 border border-gray-300 rounded-2xl text-lg"
-                           value="Анна Петрова" placeholder="Ваше имя">
+                           placeholder="Ваше имя">
                 </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <a href="#" class="block p-6 bg-gray-50 hover:bg-gray-100 rounded-2xl transition">
+                <a href="favorites.html" class="block p-6 bg-gray-50 hover:bg-gray-100 rounded-2xl transition">
                     <h3 class="font-semibold text-lg">⭐ Избранное</h3>
-                    <p class="text-gray-500">3 сохранённых маршрута</p>
+                    <p id="favoritesCountText" class="text-gray-500">Загрузка...</p>
                 </a>
             </div>
 
@@ -57,64 +59,15 @@
         </div>
         </div>
 
-        <button onclick="saveProfile()" 
+        <p id="saveStatus" class="hidden mb-4 text-center text-sm"></p>
+        <button type="button" onclick="saveProfile()"
                 class="w-full bg-blue-600 text-white py-4 rounded-2xl font-semibold text-lg">
             Сохранить изменения
         </button>
     </div>
 
-<script>
-    // Пример данных (с бэкенда будут приходить сюда)
-    let userNotifications = [
-        { id: 1, author: "Иван Соколов", route: "Ночная Москва", time: "2 часа назад" },
-        { id: 2, author: "Мария Козлова", route: "Парки и скверы СПб", time: "5 часов назад" },
-        { id: 3, author: "Алексей Морозов", route: "Золотое кольцо", time: "вчера" },
-        { id: 4, author: "Елена Васильева", route: "Исторический центр", time: "2 дня назад" },
-        { id: 5, author: "Дмитрий Волков", route: "По следам Пушкина", time: "3 дня назад" },
-        { id: 6, author: "Ольга Смирнова", route: "Байкал зимой", time: "4 дня назад" }
-    ];
-
-    let displayedCount = 5;
-
-    function renderNotifications(notifications, containerId, isCreator = false) {
-        const container = document.getElementById(containerId);
-        container.innerHTML = '';
-
-        const toShow = notifications.slice(0, displayedCount);
-
-        toShow.forEach(notif => {
-            const div = document.createElement('div');
-            div.className = "p-5 bg-gray-50 hover:bg-gray-100 rounded-2xl transition flex gap-4";
-            div.innerHTML = `
-                <div class="text-3xl">🗺</div>
-                <div class="flex-1">
-                    <p class="font-medium">
-                        ${isCreator ? 
-                            `<span class="text-blue-600">${notif.user}</span> добавил в избранное ваш маршрут` : 
-                            `<span class="text-blue-600">${notif.author}</span> создал новый маршрут`}
-                    </p>
-                    <p class="text-gray-700">${notif.route}</p>
-                    <p class="text-sm text-gray-500 mt-1">${notif.time}</p>
-                </div>
-            `;
-            container.appendChild(div);
-        });
-
-        // Показывать кнопку "Показать ещё"
-        const loadMoreBtn = document.getElementById(containerId === 'userNotifications' ? 'loadMoreUser' : 'loadMoreCreator');
-        loadMoreBtn.classList.toggle('hidden', notifications.length <= displayedCount);
-    }
-
-    function loadMoreUserNotifications() {
-        displayedCount += 5;
-        renderNotifications(userNotifications, 'userNotifications');
-    }
-
-    // Инициализация
-    document.addEventListener('DOMContentLoaded', () => {
-        renderNotifications(userNotifications, 'userNotifications');
-    });
-
-</script>
+    <script src="../js/api.js"></script>
+    <script src="../js/utils.js"></script>
+    <script src="../js/pages/profile.js"></script>
 </body>
 </html>

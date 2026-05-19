@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CityGuide - Создать маршрут</title>
-    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/styles.css">
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-50">
@@ -42,9 +42,10 @@
             <!-- Продолжительность -->
             <div>
                 <label class="block text-lg font-medium mb-2">Продолжительность</label>
-                <input type="text" id="duration" required
+                <input type="number" id="duration" required min="15" step="15"
                        class="w-full px-5 py-4 border border-gray-300 rounded-2xl focus:outline-none focus:border-blue-500"
-                       placeholder="4 часа" value="4 часа">
+                       placeholder="240" value="240">
+                <p class="text-sm text-gray-500 mt-1">Укажите длительность в минутах (например, 240 = 4 часа)</p>
             </div>
 
             <!-- Google Maps URL -->
@@ -87,6 +88,8 @@
                 </div>
             </div>
 
+            <p id="formError" class="hidden p-4 rounded-xl bg-red-50 text-red-700 text-sm"></p>
+
             <!-- Кнопка публикации -->
             <button type="submit"
                     class="w-full bg-green-600 hover:bg-green-700 text-white py-5 rounded-2xl text-xl font-semibold transition">
@@ -95,113 +98,8 @@
         </form>
     </div>
 
-    <script>
-        let selectedPhotos = [];
-        const maxPhotos = 6;
-        let selectedTags = [];
-
-        const availableTags = ["Пеший", "Природа", "Исторический", "Архитектура", "Гастрономия", 
-                              "На авто", "Выходные", "Однодневный", "Семейный", "Ночной"];
-
-        // Превью фото
-        document.getElementById('photoInput').addEventListener('change', function(e) {
-            const files = Array.from(e.target.files);
-            
-            files.forEach(file => {
-                if (selectedPhotos.length >= maxPhotos) return;
-                
-                const reader = new FileReader();
-                reader.onload = function(ev) {
-                    selectedPhotos.push({
-                        file: file,
-                        preview: ev.target.result
-                    });
-                    renderPhotoPreviews();
-                };
-                reader.readAsDataURL(file);
-            });
-        });
-
-        function renderPhotoPreviews() {
-            const container = document.getElementById('photoPreview');
-            container.innerHTML = '';
-
-            selectedPhotos.forEach((photo, index) => {
-                const div = document.createElement('div');
-                div.className = "relative";
-                div.innerHTML = `
-                    <img src="${photo.preview}" class="w-full h-32 object-cover rounded-xl">
-                    <button onclick="removePhoto(${index})" 
-                            class="absolute top-2 right-2 bg-red-500 text-white w-6 h-6 rounded-full text-xs">✕</button>
-                `;
-                container.appendChild(div);
-            });
-        }
-
-        function removePhoto(index) {
-            selectedPhotos.splice(index, 1);
-            renderPhotoPreviews();
-        }
-
-        // Теги
-        function renderTags() {
-            const container = document.getElementById('tagsContainer');
-            container.innerHTML = '';
-
-            availableTags.forEach(tag => {
-                const isSelected = selectedTags.includes(tag);
-                const btn = document.createElement('button');
-                btn.className = `px-5 py-2 rounded-2xl text-sm font-medium transition ${isSelected ? 
-                    'bg-blue-600 text-white' : 'bg-gray-200 hover:bg-gray-300'}`;
-                btn.textContent = tag;
-                btn.onclick = () => toggleTag(tag, btn);
-                container.appendChild(btn);
-            });
-        }
-
-        function toggleTag(tag, btn) {
-            if (selectedTags.includes(tag)) {
-                selectedTags = selectedTags.filter(t => t !== tag);
-                btn.classList.remove('bg-blue-600', 'text-white');
-                btn.classList.add('bg-gray-200');
-            } else if (selectedTags.length < 3) {
-                selectedTags.push(tag);
-                btn.classList.add('bg-blue-600', 'text-white');
-            } else {
-                alert("Можно выбрать максимум 3 тега");
-            }
-        }
-
-        // Отправка формы
-        document.getElementById('createRouteForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            if (selectedPhotos.length === 0) {
-                alert("Добавьте хотя бы одну фотографию!");
-                return;
-            }
-
-            const formData = {
-                title: document.getElementById('title').value,
-                description: document.getElementById('description').value,
-                duration: document.getElementById('duration').value,
-                mapUrl: document.getElementById('mapUrl').value,
-                photosCount: selectedPhotos.length,
-                tags: selectedTags,
-                audioFile: document.getElementById('audioInput').files[0]?.name || "Не загружен"
-            };
-
-            console.log("Отправка на бэкенд:", formData);
-            alert("✅ Маршрут успешно создан!\n(Демо-режим)");
-            
-            // Можно перенаправить в профиль Creator
-            // window.location.href = 'creator-profile.html';
-        });
-
-        // Инициализация
-        document.addEventListener('DOMContentLoaded', () => {
-            renderTags();
-        });
-    </script>
+    <script src="../js/api.js"></script>
+    <script src="../js/utils.js"></script>
+    <script src="../js/pages/create-route.js"></script>
 </body>
 </html>

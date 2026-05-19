@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CityGuide - Туристические маршруты</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/styles.css">
     <!-- Tailwind CSS CDN для красивого вида без усилий -->
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
@@ -15,12 +15,7 @@
         <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
             <h1 class="text-3xl font-bold">CityGuide</h1>
             
-            <nav class="flex items-center gap-6">
-                <a href="pages/login.html" 
-                   class="bg-white text-blue-600 px-5 py-2 rounded-lg font-medium hover:bg-gray-100 transition">
-                    Войти
-                </a>
-            </nav>
+            <nav id="mainNav" class="flex items-center gap-6"></nav>
         </div>
     </header>
 
@@ -74,6 +69,8 @@
         </section>
     </div>
 
+    <script src="js/api.js"></script>
+    <script src="js/utils.js"></script>
     <script src="js/main.js"></script>
 </body>
 </html>

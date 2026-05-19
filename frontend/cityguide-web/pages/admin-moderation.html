@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CityGuide - Модерация</title>
-    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/styles.css">
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-50">
@@ -34,125 +34,8 @@
         </div>
     </div>
 
-    <script>
-        // Пример данных (в будущем придут с бэкенда)
-        let pendingRoutes = [
-            {
-                id: 101,
-                title: "Секретные места Арбата",
-                duration: "3 часа",
-                tag: "Пеший",
-                image: "https://picsum.photos/id/1015/600/400",
-                creator: "Иван Соколов",
-                createdDate: "15 мая 2026"
-            },
-            {
-                id: 102,
-                title: "Веломаршрут по Лосиному острову",
-                duration: "6 часов",
-                tag: "Природа",
-                image: "https://picsum.photos/id/133/600/400",
-                creator: "Мария Козлова",
-                createdDate: "16 мая 2026"
-            },
-            {
-                id: 103,
-                title: "Ночная экскурсия по центру СПб",
-                duration: "2 часа",
-                tag: "Ночной",
-                image: "https://picsum.photos/id/201/600/400",
-                creator: "Алексей Морозов",
-                createdDate: "16 мая 2026"
-            }
-        ];
-
-        function createModerationCard(route) {
-            const card = document.createElement('div');
-            card.className = 'route-card bg-white rounded-3xl overflow-hidden shadow';
-            card.innerHTML = `
-                <a href="route-detail.html?id=${route.id}" class="block">
-                    <img src="${route.image}" alt="${route.title}" class="w-full h-52 object-cover">
-                    <div class="p-5">
-                        <h3 class="font-semibold text-lg leading-tight mb-2">${route.title}</h3>
-                        <p class="text-sm text-gray-500 mb-3">Автор: ${route.creator}</p>
-                        
-                        <div class="flex items-center gap-4 text-sm text-gray-600 mb-5">
-                            <div class="flex items-center gap-1">
-                                <span>⏱</span>
-                                <span>${route.duration}</span>
-                            </div>
-                            <div class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
-                                ${route.tag}
-                            </div>
-                        </div>
-                    </div>
-                </a>
-
-                <!-- Кнопки модерации -->
-                <div class="border-t p-5 flex gap-3">
-                    <button onclick="rejectRoute(${route.id}, this)" 
-                            class="flex-1 bg-red-100 hover:bg-red-200 text-red-700 py-3 rounded-2xl font-medium transition">
-                        Отклонить
-                    </button>
-                    <button onclick="approveRoute(${route.id}, this)" 
-                            class="flex-1 bg-green-600 hover:bg-green-700 text-white py-3 rounded-2xl font-medium transition">
-                        Одобрить
-                    </button>
-                </div>
-            `;
-            return card;
-        }
-
-        // Одобрить маршрут
-        function approveRoute(id, button) {
-            if (confirm("Одобрить этот маршрут?")) {
-                button.parentElement.parentElement.style.opacity = "0.6";
-                button.parentElement.innerHTML = `
-                    <div class="flex-1 text-center py-3 text-green-600 font-semibold">
-                        ✅ Маршрут одобрен
-                    </div>
-                `;
-                console.log(`Маршрут ${id} одобрен`);
-                // Здесь будет вызов API: approveRoute(id)
-            }
-        }
-
-        // Отклонить маршрут
-        function rejectRoute(id, button) {
-            if (confirm("Отклонить этот маршрут?")) {
-                button.parentElement.parentElement.style.opacity = "0.6";
-                button.parentElement.innerHTML = `
-                    <div class="flex-1 text-center py-3 text-green-600 font-semibold">
-                        ❌ Маршрут отклонён
-                    </div>
-                `;
-                console.log(`Маршрут ${id} отклонён`);
-                // Здесь будет вызов API: rejectRoute(id)
-            }
-        }
-
-        // Рендер всех маршрутов
-        function renderPendingRoutes() {
-            const container = document.getElementById('moderationContainer');
-            container.innerHTML = '';
-
-            if (pendingRoutes.length === 0) {
-                container.innerHTML = `
-                    <div class="col-span-3 text-center py-20">
-                        <p class="text-2xl text-gray-400">Нет маршрутов на модерации ✅</p>
-                    </div>`;
-                return;
-            }
-
-            pendingRoutes.forEach(route => {
-                container.appendChild(createModerationCard(route));
-            });
-
-            document.getElementById('pendingCount').textContent = pendingRoutes.length;
-        }
-
-        // Запуск
-        document.addEventListener('DOMContentLoaded', renderPendingRoutes);
-    </script>
+    <script src="../js/api.js"></script>
+    <script src="../js/utils.js"></script>
+    <script src="../js/pages/admin-moderation.js"></script>
 </body>
 </html>
