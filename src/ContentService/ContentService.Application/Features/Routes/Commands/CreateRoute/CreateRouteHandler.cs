@@ -13,11 +13,9 @@ namespace ContentService.Application.Features.Routes.Commands.CreateRoute
     {
         private readonly IRouteRepository _routeRepository;
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IKafkaEventPublisher _kafkaEventPublisher;
 
-        public CreateRouteHandler(IRouteRepository routeRepository, IUnitOfWork unitOfWork, IKafkaEventPublisher kafkaEventPublisher)
+        public CreateRouteHandler(IRouteRepository routeRepository, IUnitOfWork unitOfWork)
         {
-            _kafkaEventPublisher = kafkaEventPublisher;
             _routeRepository = routeRepository;
             _unitOfWork = unitOfWork;
         }
@@ -38,15 +36,6 @@ namespace ContentService.Application.Features.Routes.Commands.CreateRoute
             await _routeRepository.AddAsync(route,cancellationToken);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-            await _kafkaEventPublisher.PublishAsync("content.routes", new ContentEventDto 
-            {
-                EventType = "approved",
-                RouteId = route.Id,
-                CreatorId = route.CreatorId,
-                RouteTitle = route.Title,
-                Timestamp = DateTime.UtcNow
-            }, cancellationToken);
 
             return new CreateRouteResponse
             {
