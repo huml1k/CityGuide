@@ -107,9 +107,9 @@ namespace NotificationService.Infrastructure.Consumers
             {
                 var notifications = topic switch
                 {
-                    var t when t.Contains("favorites") => ParseFavoriteEvent(value),
-                    var t when t.Contains("content") => ParseContentEvent(value),
-                    var t when t.Contains("moderation") => ParseModerationEvent(value),
+                    "user.favorites" => ParseFavoriteEvent(value),
+                    "content.routes" => ParseContentEvent(value),
+                    "content.moderation" => ParseModerationEvent(value),
                     _ => null
                 };
 
@@ -142,7 +142,7 @@ namespace NotificationService.Infrastructure.Consumers
                         NotificationId = notification.Id,
                         Provider = "Kafka",
                         Status = "Received",
-                        ErrorMessage = null,
+                        ErrorMessage = string.Empty,
                         CreatedAt = DateTime.UtcNow
                     }, ct);
                 }
