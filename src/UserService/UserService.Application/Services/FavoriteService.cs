@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using System.IdentityModel.Tokens.Jwt;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using System.Security.Claims;
+using UserService.Application.Dtos;
 using UserService.Application.Interfaces.Clients;
 using UserService.Application.Interfaces.Service;
 using UserService.Domain.Entities;
@@ -14,17 +16,20 @@ public class FavoriteService : IFavoriteService
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly IContentServiceClient _contentServiceClient;
     private readonly ILogger<FavoriteService> _logger;
+    private readonly IEventPublisher _eventPublisher;
     
     public FavoriteService(
         IFavoritesRepository favoriteRepository,
         IHttpContextAccessor httpContextAccessor,
         IContentServiceClient contentServiceClient,
-        ILogger<FavoriteService> logger)
+        ILogger<FavoriteService> logger,
+        IEventPublisher eventPublisher)
     {
         _favoriteRepository = favoriteRepository;
         _httpContextAccessor = httpContextAccessor;
         _contentServiceClient = contentServiceClient;
         _logger = logger;
+        _eventPublisher = eventPublisher;
     }
     public async Task<Guid> AddFavoriteAsync(Guid routeId, CancellationToken cancellationToken = default)
     {
@@ -47,6 +52,14 @@ public class FavoriteService : IFavoriteService
 
         _logger.LogInformation($"User {userId} added route {routeId} to favorites", userId, routeId);
         
+        await _eventPublisher.PublishAsync("user.favorites", new FavoriteEventDto
+        {
+            EventType = "favoriteadded",
+            UserId = userId,
+            RouteId = routeId,
+            Timestamp = DateTime.UtcNow
+        }, cancellationToken);
+        
         return favorite.Id;
     }
 
@@ -68,6 +81,14 @@ public class FavoriteService : IFavoriteService
         await _contentServiceClient.DecrementFavoritesAsync(routeId);
 
         _logger.LogInformation($"User {userId} removed route {routeId} from favorites", userId, routeId);
+        
+        await _eventPublisher.PublishAsync("user.favorites", new FavoriteEventDto
+        {
+            EventType = "favoriteremoved",
+            UserId = userId,
+            RouteId = routeId,
+            Timestamp = DateTime.UtcNow
+        }, cancellationToken);
     }
 
     public async Task<bool> IsFavoriteAsync(Guid routeId, CancellationToken cancellationToken = default)
@@ -92,16 +113,18 @@ public class FavoriteService : IFavoriteService
         
         return distinctRouteIds.ToDictionary(routeId => routeId, routeId => favoriteSet.Contains(routeId));
     }
-    
     private Guid GetCurrentUserId()
     {
-        var userIdClaim = _httpContextAccessor.HttpContext?.User?.FindFirst("sub");
-        
-        if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
-        {
+        var user = _httpContextAccessor.HttpContext?.User;
+
+        var userIdClaim =
+            user?.FindFirst(JwtRegisteredClaimNames.Sub)
+            ?? user?.FindFirst("sub")
+            ?? user?.FindFirst(ClaimTypes.NameIdentifier);
+
+        if (userIdClaim is null || !Guid.TryParse(userIdClaim.Value, out var userId))
             throw new UnauthorizedAccessException("User is not authenticated or invalid user ID");
-        }
-        
+
         return userId;
     }
 }
