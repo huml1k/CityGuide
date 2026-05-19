@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using MediatR;
 
 namespace ContentService.Application.Features.Files.Commands.GenerateUploadUrl
 {
-    internal class GenerateUploadUrlCommand
+    public class GenerateUploadUrlCommand : IRequest
     {
     }
 }
