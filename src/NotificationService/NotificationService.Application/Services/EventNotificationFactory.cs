@@ -34,6 +34,12 @@ namespace NotificationService.Application.Services
                     "Маршрут удалён",
                     $"Маршрут «{routeName}» был удалён модератором или системой."
                 ),
+                "rejected" => 
+                ( 
+                    "ContentRejected",
+                    "Маршрут отклонен",
+                    $"Ваш маршрут «{routeName}» не прошел модерацию."
+                ),
                 _ => (null, null, null)
             };
 
