@@ -9,7 +9,7 @@ namespace NotificationService.Application.Services
 {
     public class EventNotificationFactory : IEventNotificationFactory
     {
-        public List<Notification?> CreateFromContentEvent(ContentEventDto dto)
+        public List<Notification> CreateFromContentEvent(ContentEventDto dto)
         {
             if (string.IsNullOrWhiteSpace(dto.EventType)) return new();
 
@@ -60,7 +60,7 @@ namespace NotificationService.Application.Services
             return notifications;
         }
 
-        public List<Notification?> CreateFromFavoriteEvent(FavoriteEventDto dto)
+        public List<Notification> CreateFromFavoriteEvent(FavoriteEventDto dto)
         {
             if (string.IsNullOrWhiteSpace(dto.EventType)) return new();
 

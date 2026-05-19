@@ -38,12 +38,12 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-//using (var scope = app.Services.CreateScope())
-//{
-//    var db = scope.ServiceProvider.GetRequiredService<NotificationDbContext>();
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<NotificationDbContext>();
 
-//    db.Database.Migrate();
-//}
+    db.Database.Migrate();
+}
 
 app.UseAuthentication();
 app.UseAuthorization();
