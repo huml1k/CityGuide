@@ -1,12 +1,13 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using UserService.Application.Dtos;
 using UserService.Application.Interfaces.Service;
 
 namespace UserService.Api.Controller;
 
 [ApiController]
 [Route("api/[controller]")]
-//[Authorize] // Важно: требует авторизации
+[Authorize]
 public class FavoritesController : ControllerBase
 {
     private readonly IFavoriteService _favoriteService;
@@ -17,11 +18,12 @@ public class FavoritesController : ControllerBase
     }
     
     [HttpPost("routes/{routeId:guid}")]
-    public async Task<ActionResult<Guid>> AddFavorite(Guid routeId)
+    public async Task<ActionResult<Guid>> AddFavorite(Guid routeId, CancellationToken cancellationToken)
     {
         try
         {
-            var favoriteId = await _favoriteService.AddFavoriteAsync(routeId);
+            var favoriteId = await _favoriteService.AddFavoriteAsync(routeId, cancellationToken);
+            
             return Ok(new { id = favoriteId, message = "Added to favorites" });
         }
         catch (InvalidOperationException ex)
