@@ -15,8 +15,6 @@ namespace ContentService.Application.Features.Routes.Commands.UpdateRoute
 
         public int DurationMinutes { get; set; }
 
-        public decimal Price { get; set; }
-
         public string? GoogleMapsUrl { get; set; }
     }
 }

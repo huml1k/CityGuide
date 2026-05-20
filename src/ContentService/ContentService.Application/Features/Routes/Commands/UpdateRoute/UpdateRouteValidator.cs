@@ -21,9 +21,6 @@ namespace ContentService.Application.Features.Routes.Commands.UpdateRoute
 
             RuleFor(x => x.DurationMinutes)
                 .GreaterThan(0);
-
-            RuleFor(x => x.Price)
-                .GreaterThanOrEqualTo(0);
         }
     }
 }

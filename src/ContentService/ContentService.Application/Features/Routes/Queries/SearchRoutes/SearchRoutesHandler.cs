@@ -1,4 +1,5 @@
-﻿using ContentService.Domain.Interfaces.Repositories;
+﻿using ContentService.Application.Common.Exceptions;
+using ContentService.Domain.Interfaces.Repositories;
 using MediatR;
 using System;
 using System.Collections.Generic;
@@ -18,6 +19,41 @@ namespace ContentService.Application.Features.Routes.Queries.SearchRoutes
         {
             var routes = await _routeRepository.SearchAsync(request.Search, cancellationToken);
 
+            if (string.IsNullOrWhiteSpace(request.Search))
+            {
+                throw new ValidationException(
+                    new Dictionary<string, string[]>
+                    {
+            {
+                nameof(request.Search),
+                new[] { "Search query is required." }
+            }
+                    });
+            }
+
+            if (routes is null)
+            {
+                throw new NotFoundException(
+                    "Routes were not found.");
+            }
+
+            if (!routes.Any())
+            {
+                throw new NotFoundException(
+                    $"No routes found for search '{request.Search}'.");
+            }
+
+            if (routes.Any(x => x.RouteImages is null))
+            {
+                throw new BusinessRuleException(
+                    "Some routes have missing images.");
+            }
+
+            if (routes.Any(x => x.RouteStats is null))
+            {
+                throw new BusinessRuleException(
+                    "Some routes have missing statistics.");
+            }
             return routes
                 .Select(route => new SearchRoutesResponse
                 {

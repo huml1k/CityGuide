@@ -1,4 +1,5 @@
-﻿using ContentService.Domain.Interfaces.Repositories;
+﻿using ContentService.Application.Common.Exceptions;
+using ContentService.Domain.Interfaces.Repositories;
 using MediatR;
 using System;
 using System.Collections.Generic;
@@ -18,6 +19,29 @@ namespace ContentService.Application.Features.Routes.Queries.GetPendingRoutes
         {
             var routes = await _routeRepository.GetPendingModerationAsync(cancellationToken);
 
+            if (routes is null)
+            {
+                throw new NotFoundException(
+                    "Routes were not found.");
+            }
+
+            if (!routes.Any())
+            {
+                throw new NotFoundException(
+                    "Routes collection is empty.");
+            }
+
+            if (routes.Any(x => x.RouteImages is null))
+            {
+                throw new BusinessRuleException(
+                    "Some routes have missing images.");
+            }
+
+            if (routes.Any(x => x.RouteTags is null))
+            {
+                throw new BusinessRuleException(
+                    "Some routes have missing tags.");
+            }
             return routes
                 .Select(route => new GetPendingRoutesResponse
                 {

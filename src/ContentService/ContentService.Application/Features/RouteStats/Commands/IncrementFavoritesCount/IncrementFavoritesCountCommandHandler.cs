@@ -1,4 +1,5 @@
-﻿using ContentService.Domain.Interfaces.Repositories;
+﻿using ContentService.Application.Common.Exceptions;
+using ContentService.Domain.Interfaces.Repositories;
 using MediatR;
 
 namespace ContentService.Application.Features.RouteStats.Commands.IncrementFavoritesCount;
@@ -27,14 +28,29 @@ public class IncrementFavoritesCountCommandHandler
 
         if (stats is null)
         {
-            throw new Exception("Route stats not found");
+            throw new NotFoundException(
+                $"Route stats for route '{request.RouteId}' were not found.");
+        }
+
+        if (stats.FavoritesCount < 0)
+        {
+            throw new BusinessRuleException(
+                "Favorites count cannot be negative.");
         }
 
         stats.FavoritesCount++;
 
         _routeStatsRepository.Update(stats);
 
-        await _unitOfWork.SaveChangesAsync(
+        var saved = await _unitOfWork.SaveChangesAsync(
             cancellationToken);
+
+        if (saved <= 0)
+        {
+            throw new BusinessRuleException(
+                "Failed to update favorites count.");
+        }
+
+        return;
     }
 }
