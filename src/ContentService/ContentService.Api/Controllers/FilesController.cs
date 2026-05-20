@@ -66,6 +66,7 @@ namespace ContentService.Api.Controllers
         /// <returns>Результат</returns>
         [ProducesResponseType(204)]
         [ProducesResponseType(401)]
+        [ProducesResponseType(403)]
         [ProducesResponseType(404)]
         [HttpDelete("images/{id:guid}")]
         public async Task<IActionResult> DeleteImage(Guid id, CancellationToken cancellationToken)
@@ -85,6 +86,7 @@ namespace ContentService.Api.Controllers
         /// <returns>Результат</returns>
         [ProducesResponseType(204)]
         [ProducesResponseType(401)]
+        [ProducesResponseType(403)]
         [ProducesResponseType(404)]
         [HttpDelete("audio/{id:guid}")]
         public async Task<IActionResult> DeleteAudio(Guid id, CancellationToken cancellationToken)
@@ -113,14 +115,14 @@ namespace ContentService.Api.Controllers
 
             var result = await _mediator.Send(query, cancellationToken);
 
-            /*return Ok(new
+            return Ok(new
             {
                 url = result.Url,
                 expiresAt = result.ExpiresAt,
                 fileName = result.FileName,
                 contentType = result.ContentType
-            });*/
-            return Redirect(result.Url);
+            });
+            //return Redirect(result.Url);
         }
 
         /// <summary>
