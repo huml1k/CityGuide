@@ -43,9 +43,9 @@ public sealed class AuthController : ControllerBase
             var result = await _authService.LoginAsync(request.Email, request.Password, cancellationToken);
             return Ok(AuthResponse.FromResult(result));
         }
-        catch (UnauthorizedException)
+        catch (BadRequestException ex)
         {
-            return Unauthorized();
+            return BadRequest(new { message = ex.Message });
         }
     }
 

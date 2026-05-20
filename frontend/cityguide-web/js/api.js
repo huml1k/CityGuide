@@ -128,20 +128,22 @@
     }
 
     function isRefreshTokenExpired() {
-        return isExpired(
-            getTokenExpiryIso(STORAGE_KEYS.refreshTokenExpiresAtUtc),
-            0
-        );
+        if (!getRefreshToken()) return true;
+        const stored = getTokenExpiryIso(STORAGE_KEYS.refreshTokenExpiresAtUtc);
+        if (!stored) return false;
+        return isExpired(stored, 0);
     }
 
     function saveAuth(data) {
         const auth = normalizeAuthResponse(data);
         if (!auth) return auth;
 
-        if (auth.accessToken) {
-            localStorage.setItem(STORAGE_KEYS.accessToken, auth.accessToken);
-            applyClaimsFromToken(auth.accessToken);
+        if (!auth.accessToken) {
+            throw new Error('Сервер не вернул access token');
         }
+
+        localStorage.setItem(STORAGE_KEYS.accessToken, auth.accessToken);
+        applyClaimsFromToken(auth.accessToken);
         if (auth.refreshToken) {
             localStorage.setItem(STORAGE_KEYS.refreshToken, auth.refreshToken);
         }
@@ -166,6 +168,7 @@
 
     function clearAuth() {
         Object.values(STORAGE_KEYS).forEach((key) => localStorage.removeItem(key));
+        initPromise = null;
     }
 
     function isLoggedIn() {
@@ -401,20 +404,7 @@
     }
 
     async function register(email, password) {
-        const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password }),
-        });
-
-        const data = await response.json().catch(() => ({}));
-
-        if (!response.ok) {
-            throw new Error(
-                data.message || data.error || `Ошибка ${response.status}`
-            );
-        }
-
+        const data = await authRequest('/api/auth/register', { email, password });
         return saveAuth(data);
     }
 

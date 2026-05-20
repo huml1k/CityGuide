@@ -60,11 +60,13 @@ public sealed class AuthService : IAuthService
     public async Task<AuthResult> LoginAsync(string email, string password, CancellationToken cancellationToken)
     {
         var normalizedEmail = NormalizeEmail(email);
+        ValidateLoginInput(normalizedEmail, password);
+
         var user = await _userRepository.GetByEmailAsync(normalizedEmail, cancellationToken);
 
         if (user is null || !_passwordHasher.Verify(password, user.PasswordHash))
         {
-            throw new UnauthorizedException("Invalid email or password.");
+            throw new BadRequestException("Invalid email or password.");
         }
 
         return await IssueTokensAsync(user, revokeExistingSessions: true, cancellationToken);
@@ -158,14 +160,24 @@ public sealed class AuthService : IAuthService
         return email.Trim().ToLowerInvariant();
     }
 
-    private static void ValidateRegistrationInput(string email, string password)
+    private static void ValidateLoginInput(string email, string password)
     {
         if (string.IsNullOrWhiteSpace(email) || !email.Contains('@'))
         {
             throw new BadRequestException("Email is invalid.");
         }
 
-        if (string.IsNullOrWhiteSpace(password) || password.Length < 8)
+        if (string.IsNullOrWhiteSpace(password))
+        {
+            throw new BadRequestException("Password is required.");
+        }
+    }
+
+    private static void ValidateRegistrationInput(string email, string password)
+    {
+        ValidateLoginInput(email, password);
+
+        if (password.Length < 8)
         {
             throw new BadRequestException("Password must be at least 8 characters.");
         }

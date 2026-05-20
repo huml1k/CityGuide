@@ -9,8 +9,8 @@
         const errorEl = document.getElementById('formError');
         const submitBtn = e.target.querySelector('button[type="submit"]');
 
-        if (password.length < 6) {
-            utils.showFormMessage(errorEl, 'Пароль должен быть не короче 6 символов', 'error');
+        if (password.length < 8) {
+            utils.showFormMessage(errorEl, 'Пароль должен быть не короче 8 символов', 'error');
             return;
         }
 
