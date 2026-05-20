@@ -1,4 +1,5 @@
-﻿using ContentService.Application.DTOs;
+﻿using ContentService.Application.Common.Exceptions;
+using ContentService.Application.DTOs;
 using ContentService.Application.Interfaces;
 using ContentService.Domain.Interfaces.Repositories;
 using MediatR;
@@ -27,22 +28,60 @@ namespace ContentService.Application.Features.Routes.Commands.DeleteRoute
 
             if (route is null)
             {
-                throw new Exception("Route not found");
+                throw new RouteNotFoundException(request.RouteId);
             }
 
-            _routeRepository.Delete(route);
-
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-            await _kafkaEventPublisher.PublishAsync("content.routes", new ContentEventDto
+            if (route.DeletedAt.HasValue)
             {
-                EventId = Guid.NewGuid().ToString(),
-                EventType = "deleted",
-                RouteId = route.Id,
-                CreatorId = route.CreatorId,
-                RouteTitle = route.Title,
-                Timestamp = DateTime.UtcNow
-            }, cancellationToken);
+                throw new BusinessRuleException(
+                    "Route is already deleted.");
+            }
+
+            try
+            {
+                _routeRepository.Delete(route);
+
+                var saved = await _unitOfWork.SaveChangesAsync(
+                    cancellationToken);
+
+                if (saved <= 0)
+                {
+                    throw new BusinessRuleException(
+                        "Failed to delete route.");
+                }
+            }
+            catch (BusinessRuleException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw new BusinessRuleException(
+                    "An error occurred while deleting route.",
+                    ex);
+            }
+
+            try
+            {
+                await _kafkaEventPublisher.PublishAsync(
+                    "content.routes",
+                    new ContentEventDto
+                    {
+                        EventId = Guid.NewGuid().ToString(),
+                        EventType = "deleted",
+                        RouteId = route.Id,
+                        CreatorId = route.CreatorId,
+                        RouteTitle = route.Title,
+                        Timestamp = DateTime.UtcNow
+                    },
+                    cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                throw new BusinessRuleException(
+                    "Route deleted but Kafka event publishing failed.",
+                    ex);
+            }
         }
     }
 }

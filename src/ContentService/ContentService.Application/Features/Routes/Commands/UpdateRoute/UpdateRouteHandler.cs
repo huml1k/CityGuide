@@ -1,4 +1,5 @@
-﻿using ContentService.Application.DTOs;
+﻿using ContentService.Application.Common.Exceptions;
+using ContentService.Application.DTOs;
 using ContentService.Application.Interfaces;
 using ContentService.Domain.Interfaces.Repositories;
 using MediatR;
@@ -24,10 +25,39 @@ namespace ContentService.Application.Features.Routes.Commands.UpdateRoute
         public async Task<UpdateRouteResponse> Handle(UpdateRouteCommand request, CancellationToken cancellationToken)
         {
             var route = await _routeRepository.GetByIdAsync(request.RouteId, cancellationToken);
-
             if (route is null)
             {
-                throw new Exception("Route not found");
+                throw new RouteNotFoundException(request.RouteId);
+            }
+
+            if (route.DeletedAt.HasValue)
+            {
+                throw new BusinessRuleException(
+                    "Deleted route cannot be updated.");
+            }
+
+            if (string.IsNullOrWhiteSpace(request.Title))
+            {
+                throw new ValidationException(
+                    new Dictionary<string, string[]>
+                    {
+                {
+                    nameof(request.Title),
+                    new[] { "Title is required." }
+                }
+                    });
+            }
+
+            if (request.DurationMinutes <= 0)
+            {
+                throw new ValidationException(
+                    new Dictionary<string, string[]>
+                    {
+                {
+                    nameof(request.DurationMinutes),
+                    new[] { "DurationMinutes must be greater than zero." }
+                }
+                    });
             }
 
             route.Title = request.Title;
@@ -36,19 +66,51 @@ namespace ContentService.Application.Features.Routes.Commands.UpdateRoute
             route.GoogleMapsUrl = request.GoogleMapsUrl;
             route.UpdatedAt = DateTime.UtcNow;
 
-            _routeRepository.Update(route);
-
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-            await _kafkaEventPublisher.PublishAsync("content.routes", new ContentEventDto
+            try
             {
-                EventId = Guid.NewGuid().ToString(),
-                EventType = "updated",
-                RouteId = request.RouteId,
-                CreatorId = route.CreatorId,
-                RouteTitle = route.Title,
-                Timestamp = DateTime.UtcNow
-            }, cancellationToken);
+                _routeRepository.Update(route);
+
+                var saved = await _unitOfWork.SaveChangesAsync(
+                    cancellationToken);
+
+                if (saved <= 0)
+                {
+                    throw new BusinessRuleException(
+                        "Failed to update route.");
+                }
+            }
+            catch (BusinessRuleException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw new BusinessRuleException(
+                    "An error occurred while updating route.",
+                    ex);
+            }
+
+            try
+            {
+                await _kafkaEventPublisher.PublishAsync(
+                    "content.routes",
+                    new ContentEventDto
+                    {
+                        EventId = Guid.NewGuid().ToString(),
+                        EventType = "updated",
+                        RouteId = request.RouteId,
+                        CreatorId = route.CreatorId,
+                        RouteTitle = route.Title,
+                        Timestamp = DateTime.UtcNow
+                    },
+                    cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                throw new BusinessRuleException(
+                    "Route updated but Kafka event publishing failed.",
+                    ex);
+            }
 
             return new UpdateRouteResponse
             {

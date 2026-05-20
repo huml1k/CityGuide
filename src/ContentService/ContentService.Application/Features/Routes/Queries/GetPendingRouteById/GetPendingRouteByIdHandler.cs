@@ -1,4 +1,5 @@
-﻿using ContentService.Application.DTOs;
+﻿using ContentService.Application.Common.Exceptions;
+using ContentService.Application.DTOs;
 using ContentService.Application.Features.Routes.DTOs;
 using ContentService.Domain.Interfaces.Repositories;
 using MediatR;
@@ -23,7 +24,31 @@ namespace ContentService.Application.Features.Routes.Queries.GetPendingRouteById
 
             if (route is null)
             {
-                throw new Exception("Route not found");
+                throw new RouteNotFoundException(request.RouteId);
+            }
+
+            if (route.DeletedAt.HasValue)
+            {
+                throw new BusinessRuleException(
+                    "Route has been deleted.");
+            }
+
+            if (route.RoutePoints is null)
+            {
+                throw new BusinessRuleException(
+                    "Route points are missing.");
+            }
+
+            if (route.RouteImages is null)
+            {
+                throw new BusinessRuleException(
+                    "Route images are missing.");
+            }
+
+            if (route.AudioFiles is null)
+            {
+                throw new BusinessRuleException(
+                    "Route audio files are missing.");
             }
 
             return new GetPendingRouteByIdResponse
