@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CityGuide - Редактировать маршрут</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+
+    <header class="bg-blue-600 text-white shadow-md">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 onclick="window.location.href='../index.html'" class="text-3xl font-bold cursor-pointer">CityGuide</h1>
+            <nav id="mainNav" class="flex items-center gap-6"></nav>
+        </div>
+    </header>
+
+    <div class="max-w-4xl mx-auto px-6 py-10">
+        <h1 class="text-4xl font-bold mb-2">Редактировать маршрут</h1>
+        <p class="text-gray-600 mb-10">Измените данные до публикации маршрута</p>
+
+        <form id="editRouteForm" class="space-y-8 bg-white rounded-3xl shadow p-8">
+
+            <div>
+                <label class="block text-lg font-medium mb-2">Название маршрута</label>
+                <input type="text" id="title" required
+                       class="w-full px-5 py-4 border border-gray-300 rounded-2xl text-lg focus:outline-none focus:border-blue-500">
+            </div>
+
+            <div>
+                <label class="block text-lg font-medium mb-2">Описание</label>
+                <textarea id="description" rows="5" required
+                          class="w-full px-5 py-4 border border-gray-300 rounded-2xl focus:outline-none focus:border-blue-500"></textarea>
+            </div>
+
+            <div>
+                <label class="block text-lg font-medium mb-2">Продолжительность (минуты)</label>
+                <input type="number" id="duration" required min="15" step="15"
+                       class="w-full px-5 py-4 border border-gray-300 rounded-2xl focus:outline-none focus:border-blue-500">
+            </div>
+
+            <div>
+                <label class="block text-lg font-medium mb-2">Ссылка на карту (Google Maps)</label>
+                <input type="url" id="mapUrl"
+                       class="w-full px-5 py-4 border border-gray-300 rounded-2xl focus:outline-none focus:border-blue-500"
+                       placeholder="https://maps.app.goo.gl/...">
+            </div>
+
+            <p id="formError" class="hidden p-4 rounded-xl bg-red-50 text-red-700 text-sm"></p>
+
+            <div class="flex gap-4">
+                <a href="creator-profile.html"
+                   class="flex-1 text-center py-4 border border-gray-300 rounded-2xl font-semibold hover:bg-gray-50">
+                    Отмена
+                </a>
+                <button type="submit"
+                        class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl font-semibold transition">
+                    Сохранить изменения
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script src="../js/api.js"></script>
+    <script src="../js/utils.js"></script>
+    <script src="../js/pages/edit-route.js"></script>
+</body>
+</html>

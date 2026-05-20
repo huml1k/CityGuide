@@ -1,6 +1,7 @@
 using AuthService.AuthKit;
 using Confluent.Kafka;
 using Microsoft.EntityFrameworkCore;
+using NotificationService.Api.Middleware;
 using Microsoft.Extensions.Options;
 using NotificationService.Application;
 using NotificationService.Application.Services;
@@ -31,6 +32,8 @@ builder.Services.AddDbContext<NotificationDbContext>(options =>
 
 
 var app = builder.Build();
+
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {

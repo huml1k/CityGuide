@@ -11,17 +11,24 @@
         const card = document.createElement('div');
         card.className = 'route-card bg-white rounded-3xl overflow-hidden shadow';
         card.dataset.routeId = route.id;
+        const description = route.description
+            ? utils.escapeHtml(route.description.slice(0, 120)) +
+              (route.description.length > 120 ? '…' : '')
+            : 'Без описания';
+
         card.innerHTML = `
-            <a href="route-detail.html?id=${route.id}" class="block">
+            <div class="block">
                 <img src="${imageUrl}" alt="${utils.escapeHtml(route.title)}" class="w-full h-52 object-cover">
                 <div class="p-5">
                     <h3 class="font-semibold text-lg leading-tight mb-2">${utils.escapeHtml(route.title)}</h3>
-                    <div class="flex items-center gap-4 text-sm text-gray-600 mb-5">
+                    <p class="text-gray-600 text-sm mb-3 line-clamp-2">${description}</p>
+                    <div class="flex items-center gap-4 text-sm text-gray-600 mb-2">
                         <span>⏱ ${utils.formatDuration(route.durationMinutes)}</span>
+                        <span class="px-3 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-medium">На модерации</span>
                         <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">${utils.escapeHtml(tag)}</span>
                     </div>
                 </div>
-            </a>
+            </div>
             <div class="border-t p-5 flex gap-3 moderation-actions">
                 <button type="button" data-action="reject"
                     class="flex-1 bg-red-100 hover:bg-red-200 text-red-700 py-3 rounded-2xl font-medium transition">
@@ -91,5 +98,16 @@
         }
     }
 
-    document.addEventListener('DOMContentLoaded', loadPending);
+    document.addEventListener('DOMContentLoaded', async () => {
+        const apiClient = window.CityGuideApi;
+        await apiClient.initAuth();
+        if (!utils.isAdminRole(apiClient.getCurrentRole())) {
+            if (!(await utils.requireAuth('login.html'))) return;
+            utils.showToast('Доступ только для администратора', 'error');
+            utils.navigateToHome();
+            return;
+        }
+        await utils.initPageNav('mainNav');
+        await loadPending();
+    });
 })();

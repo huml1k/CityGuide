@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using NotificationService.Infrastructure.Repository.Interface;
@@ -27,8 +27,16 @@ namespace NotificationService.Api.Controllers
 
 
         [HttpGet("unread")]
-        public async Task<IActionResult> GetUnreadAsync(CancellationToken ct) =>
-             Ok(await _repository.GetUnreadAsync(GetCurrentUserId(), ct));
+        public async Task<IActionResult> GetUnreadAsync(CancellationToken ct)
+        {
+            if (!TryGetCurrentUserId(out var userId))
+            {
+                return Ok(Array.Empty<object>());
+            }
+
+            var notifications = await _repository.GetUnreadAsync(userId, ct);
+            return Ok(notifications);
+        }
 
         [HttpPost("{id:guid}/read")]
         public async Task<IActionResult> MarkAsReadAsync(Guid id, CancellationToken ct)
@@ -50,11 +58,24 @@ namespace NotificationService.Api.Controllers
             return NoContent();
         }
 
+        private bool TryGetCurrentUserId(out Guid userId)
+        {
+            userId = default;
+            var claim =
+                User.FindFirst("sub")
+                ?? User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)
+                ?? User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+
+            return claim is not null && Guid.TryParse(claim.Value, out userId);
+        }
+
         private Guid GetCurrentUserId()
         {
-            var claim = User.FindFirst("sub");
-            if (claim == null || !Guid.TryParse(claim.Value, out var userId))
+            if (!TryGetCurrentUserId(out var userId))
+            {
                 throw new UnauthorizedAccessException("User ID not found in token.");
+            }
+
             return userId;
         }
     }

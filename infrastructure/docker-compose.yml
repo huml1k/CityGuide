@@ -38,13 +38,6 @@ services:
     restart: unless-stopped
     ports:
       - "${AUTH_PORT:-8081}:8080"
-    depends_on:
-      admin-db:
-        condition: service_healthy
-      user-db:
-        condition: service_healthy
-      redis:
-        condition: service_started
     networks:
       - cityguide
 
@@ -59,13 +52,10 @@ services:
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
       ASPNETCORE_URLS: http://+:8080
       ConnectionStrings__DefaultConnection: Host=user-db;Port=5432;Database=${USER_DB_NAME};Username=${USER_DB_USER};Password=${USER_DB_PASSWORD}
-      CityGuideAuth__IntrospectionBaseUrl: http://authservice:8080
     restart: unless-stopped
     ports:
       - "${USER_PORT:-8082}:8080"
     depends_on:
-      user-db:
-        condition: service_healthy
       authservice:
         condition: service_started
     networks:
@@ -83,15 +73,10 @@ services:
       ASPNETCORE_URLS: http://+:8080
       ConnectionStrings__DefaultConnection: Host=content-db;Port=5432;Database=${CONTENT_DB_NAME};Username=${CONTENT_DB_USER};Password=${CONTENT_DB_PASSWORD}
       Kafka__BootstrapServers: kafka:9092
-      CityGuideAuth__IntrospectionBaseUrl: http://authservice:8080
     restart: unless-stopped
     ports:
       - "${CONTENT_PORT:-8083}:8080"
     depends_on:
-      content-db:
-        condition: service_healthy
-      kafka:
-        condition: service_started
       authservice:
         condition: service_started
     networks:
@@ -109,15 +94,10 @@ services:
       ASPNETCORE_URLS: http://+:8080
       ConnectionStrings__DefaultConnection: Host=notification-db;Port=5432;Database=${NOTIFICATION_DB_NAME};Username=${NOTIFICATION_DB_USER};Password=${NOTIFICATION_DB_PASSWORD}
       Kafka__BootstrapServers: kafka:9092
-      CityGuideAuth__IntrospectionBaseUrl: http://authservice:8080
     restart: unless-stopped
     ports:
       - "${NOTIFICATION_PORT:-8084}:8080"
     depends_on:
-      notification-db:
-        condition: service_healthy
-      kafka:
-        condition: service_started
       authservice:
         condition: service_started
     networks:
@@ -134,19 +114,17 @@ services:
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
       ASPNETCORE_URLS: http://+:8080
       ConnectionStrings__DefaultConnection: Host=admin-db;Port=5432;Database=${ADMIN_DB_NAME};Username=${ADMIN_DB_USER};Password=${ADMIN_DB_PASSWORD}
-      CityGuideAuth__IntrospectionBaseUrl: http://authservice:8080
     restart: unless-stopped
     ports:
       - "${ADMIN_PORT:-8085}:8080"
     depends_on:
-      admin-db:
-        condition: service_healthy
       authservice:
         condition: service_started
     networks:
       - cityguide
 
   user-db:
+    profiles: [infra]
     container_name: cityguide-user-db
     image: postgres:16
     restart: unless-stopped
@@ -167,6 +145,7 @@ services:
       retries: 5
 
   content-db:
+    profiles: [infra]
     container_name: cityguide-content-db
     image: postgres:16
     restart: unless-stopped
@@ -187,6 +166,7 @@ services:
       retries: 5
 
   notification-db:
+    profiles: [infra]
     container_name: cityguide-notification-db
     image: postgres:16
     restart: unless-stopped
@@ -207,6 +187,7 @@ services:
       retries: 5
 
   admin-db:
+    profiles: [infra]
     container_name: cityguide-admin-db
     image: postgres:16
     restart: unless-stopped
@@ -227,6 +208,7 @@ services:
       retries: 5
 
   pgadmin:
+    profiles: [infra]
     container_name: cityguide-pgadmin
     image: dpage/pgadmin4:latest
     restart: unless-stopped
@@ -254,6 +236,7 @@ services:
       retries: 5
 
   redis:
+    profiles: [infra]
     container_name: cityguide-redis
     image: redis:7-alpine
     restart: unless-stopped
@@ -266,6 +249,7 @@ services:
       - cityguide
 
   redis-commander:
+    profiles: [infra]
     container_name: cityguide-redis-commander
     image: rediscommander/redis-commander:latest
     restart: unless-stopped
@@ -279,6 +263,7 @@ services:
       - cityguide
 
   zookeeper:
+    profiles: [infra]
     container_name: cityguide-zookeeper
     image: confluentinc/cp-zookeeper:7.6.1
     restart: unless-stopped
@@ -291,6 +276,7 @@ services:
       - cityguide
 
   kafka:
+    profiles: [infra]
     container_name: cityguide-kafka
     image: confluentinc/cp-kafka:7.6.1
     restart: unless-stopped
@@ -311,6 +297,7 @@ services:
       - cityguide
 
   minio:
+    profiles: [infra]
     container_name: cityguide-minio
     image: minio/minio:latest
     restart: unless-stopped

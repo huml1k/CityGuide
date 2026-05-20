@@ -29,7 +29,11 @@ public sealed class AuthService : IAuthService
         _sessionStore = sessionStore;
     }
 
-    public async Task<AuthResult> RegisterAsync(string email, string password, CancellationToken cancellationToken)
+    public async Task<AuthResult> RegisterAsync(
+        string email,
+        string password,
+        bool registerAsCreator,
+        CancellationToken cancellationToken)
     {
         var normalizedEmail = NormalizeEmail(email);
         ValidateRegistrationInput(normalizedEmail, password);
@@ -44,7 +48,7 @@ public sealed class AuthService : IAuthService
             Id = Guid.NewGuid(),
             Email = normalizedEmail,
             PasswordHash = _passwordHasher.Hash(password),
-            Role = AuthRole.User,
+            Role = registerAsCreator ? AuthRole.Creator : AuthRole.User,
             CreatedAt = DateTime.UtcNow
         };
 

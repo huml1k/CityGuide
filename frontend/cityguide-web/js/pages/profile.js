@@ -7,13 +7,17 @@
     function renderNotifications(notifications) {
         const container = document.getElementById('userNotifications');
         const loadMoreBtn = document.getElementById('loadMoreUser');
+        const markAllBtn = document.getElementById('markAllReadBtn');
         container.innerHTML = '';
 
         if (!notifications?.length) {
             container.innerHTML = '<p class="text-gray-500">Нет новых уведомлений</p>';
             loadMoreBtn?.classList.add('hidden');
+            markAllBtn?.classList.add('hidden');
             return;
         }
+
+        markAllBtn?.classList.remove('hidden');
 
         const toShow = notifications.slice(0, displayedCount);
         toShow.forEach((n) => {
@@ -35,6 +39,17 @@
     window.loadMoreUserNotifications = function () {
         displayedCount += 5;
         loadNotifications();
+    };
+
+    window.markAllUserNotificationsRead = async function () {
+        try {
+            await api.markAllNotificationsRead();
+            displayedCount = 5;
+            await loadNotifications();
+            utils.showToast('Все уведомления прочитаны', 'success');
+        } catch (err) {
+            utils.showToast(err.message, 'error');
+        }
     };
 
     async function loadNotifications() {
@@ -86,6 +101,18 @@
     }
 
     document.addEventListener('DOMContentLoaded', async () => {
+        const apiClient = window.CityGuideApi;
+        await apiClient.initAuth();
+        const role = apiClient.getCurrentRole() || '';
+        if (utils.isCreatorRole(role)) {
+            window.location.href = 'creator-profile.html';
+            return;
+        }
+        if (utils.isAdminRole(role)) {
+            window.location.href = 'admin-moderation.html';
+            return;
+        }
+        await utils.initPageNav();
         await loadProfile();
         await loadFavoritesCount();
         await loadNotifications();

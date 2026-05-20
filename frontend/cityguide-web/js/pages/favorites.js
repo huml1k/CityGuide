@@ -66,5 +66,8 @@
         }
     }
 
-    document.addEventListener('DOMContentLoaded', loadFavorites);
+    document.addEventListener('DOMContentLoaded', async () => {
+        await utils.initPageNav();
+        await loadFavorites();
+    });
 })();

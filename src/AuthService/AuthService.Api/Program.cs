@@ -53,8 +53,11 @@ using (var scope = app.Services.CreateScope())
     // AuthDbContext: только миграции (не смешивать с EnsureCreated — иначе 42P07 "already exists").
     await authDbContext.Database.MigrateAsync();
 
-    // UserDbContext: миграций пока нет — схема через EnsureCreated.
-    await userDbContext.Database.EnsureCreatedAsync();
+    // user_db: схему создаёт UserService (EF migrations). AuthService только использует user_profiles.
+    if (!await userDbContext.Database.CanConnectAsync())
+    {
+        throw new InvalidOperationException("Cannot connect to user_db. Start UserService first or check ConnectionStrings:UserPostgres.");
+    }
 }
 
 app.UseAuthentication();

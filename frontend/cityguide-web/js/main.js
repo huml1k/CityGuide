@@ -171,7 +171,7 @@
 
     document.addEventListener('DOMContentLoaded', async () => {
         await api.initAuth();
-        await utils.updateAuthNav(document.getElementById('mainNav'));
+        await utils.initPageNav();
         await loadTagsFilter();
         await loadFavoriteIds();
         await loadRoutes();

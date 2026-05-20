@@ -146,7 +146,7 @@
     }
 
     document.addEventListener('DOMContentLoaded', async () => {
-        await utils.updateAuthNav(document.getElementById('mainNav'));
+        await utils.initPageNav();
         loadRoute();
     });
 })();

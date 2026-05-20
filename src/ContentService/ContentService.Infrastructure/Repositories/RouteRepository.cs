@@ -42,7 +42,15 @@ namespace ContentService.Infrastructure.Repositories
 
         public async Task<IReadOnlyCollection<Route>> GetByCreatorIdAsync(Guid creatorId, CancellationToken cancellationToken = default)
         {
-            return await _context.Routes.Where(x => x.CreatorId == creatorId).ToListAsync(cancellationToken);
+            return await _context.Routes
+                .AsNoTracking()
+                .Where(x => x.CreatorId == creatorId && x.DeletedAt == null)
+                .Include(x => x.RouteStats)
+                .Include(x => x.RouteImages)
+                .Include(x => x.RouteTags)
+                    .ThenInclude(x => x.Tag)
+                .OrderByDescending(x => x.CreatedAt)
+                .ToListAsync(cancellationToken);
         }
 
         public async Task<Route?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)

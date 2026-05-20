@@ -156,6 +156,66 @@
         return 60;
     }
 
+    function isCreatorRole(role) {
+        return (role || '').toLowerCase() === 'creator';
+    }
+
+    function isAdminRole(role) {
+        return (role || '').toLowerCase() === 'admin';
+    }
+
+    /** Страница в подпапке pages/ (по пути скриптов или URL). */
+    function isInPagesSubfolder() {
+        const script = document.querySelector('script[src*="js/api.js"]');
+        if (script) {
+            const src = (script.getAttribute('src') || '').replace(/\\/g, '/');
+            if (src.startsWith('../')) return true;
+            if (/^(\.\/)?js\/api\.js/i.test(src)) return false;
+        }
+        return /\/pages(\/|$)/i.test(window.location.pathname || '');
+    }
+
+    /** Префикс до корня приложения (cityguide-web): '' или '../'. */
+    function getAppBaseHref() {
+        const script = document.querySelector('script[src*="js/api.js"]');
+        if (script) {
+            const src = (script.getAttribute('src') || '').replace(/\\/g, '/');
+            if (src.startsWith('../')) return '../';
+            if (src.startsWith('./')) return './';
+            const match = src.match(/^(.*\/)js\/api\.js/i);
+            if (match) return match[1];
+        }
+        return isInPagesSubfolder() ? '../' : '';
+    }
+
+    function getPagesBasePath() {
+        return isInPagesSubfolder() ? '' : 'pages/';
+    }
+
+    /** Путь к главной относительно текущей страницы */
+    function getHomeHref() {
+        return `${getAppBaseHref()}index.html`;
+    }
+
+    function navigateToHome() {
+        window.location.href = new URL(getHomeHref(), window.location.href).href;
+    }
+
+    function formatRouteStatus(status) {
+        const key = (status || '').toLowerCase();
+        if (key === 'approved') return 'Опубликован';
+        if (key === 'rejected') return 'Отклонён';
+        if (key === 'pendingmoderation') return 'На модерации';
+        return status || '—';
+    }
+
+    function routeStatusBadgeClass(status) {
+        const key = (status || '').toLowerCase();
+        if (key === 'approved') return 'bg-green-100 text-green-800';
+        if (key === 'rejected') return 'bg-red-100 text-red-800';
+        return 'bg-amber-100 text-amber-800';
+    }
+
     async function updateAuthNav(navEl) {
         if (!navEl) return;
         const api = global.CityGuideApi;
@@ -163,15 +223,24 @@
 
         await api.initAuth();
 
+        const base = getPagesBasePath();
+        const homeHref = getHomeHref();
+
         if (api.isLoggedIn()) {
-            const role = (api.getCurrentRole() || '').toLowerCase();
-            let profileHref = 'pages/profile.html';
-            if (role === 'admin') profileHref = 'pages/admin-moderation.html';
-            else if (role === 'creator') profileHref = 'pages/creator-profile.html';
+            const role = api.getCurrentRole() || '';
+            let profileHref = `${base}profile.html`;
+            if (isAdminRole(role)) profileHref = `${base}admin-moderation.html`;
+            else if (isCreatorRole(role)) profileHref = `${base}creator-profile.html`;
+
+            const creatorLink = isCreatorRole(role)
+                ? `<a href="${base}create-route.html" class="hover:underline font-medium">Создать маршрут</a>`
+                : '';
 
             navEl.innerHTML = `
+                <a href="${homeHref}" class="hover:underline">Главная</a>
+                ${creatorLink}
                 <a href="${profileHref}" class="hover:underline">Профиль</a>
-                <a href="pages/favorites.html" class="hover:underline">Избранное</a>
+                <a href="${base}favorites.html" class="hover:underline">Избранное</a>
                 <button type="button" id="logoutBtn"
                     class="bg-white text-blue-600 px-5 py-2 rounded-lg font-medium hover:bg-gray-100 transition">
                     Выйти
@@ -180,16 +249,32 @@
             if (btn) {
                 btn.addEventListener('click', async () => {
                     await api.logout();
-                    window.location.href = 'index.html';
+                    navigateToHome();
                 });
             }
         } else {
             navEl.innerHTML = `
-                <a href="pages/login.html"
+                <a href="${base}login.html"
                    class="bg-white text-blue-600 px-5 py-2 rounded-lg font-medium hover:bg-gray-100 transition">
                     Войти
                 </a>`;
         }
+    }
+
+    async function initPageNav(navId = 'mainNav') {
+        await updateAuthNav(document.getElementById(navId));
+    }
+
+    async function requireCreator(loginPath = 'login.html') {
+        if (!(await requireAuth(loginPath))) return false;
+        const api = global.CityGuideApi;
+        if (!isCreatorRole(api.getCurrentRole())) {
+            showToast('Доступно только авторам маршрутов', 'error');
+            const base = getPagesBasePath();
+            window.location.href = `${base}profile.html`;
+            return false;
+        }
+        return true;
     }
 
     async function requireAuth(loginPath = 'login.html') {
@@ -220,7 +305,18 @@
         showLoading,
         escapeHtml,
         parseDurationMinutes,
+        isCreatorRole,
+        isAdminRole,
+        isInPagesSubfolder,
+        getAppBaseHref,
+        getPagesBasePath,
+        getHomeHref,
+        navigateToHome,
+        formatRouteStatus,
+        routeStatusBadgeClass,
         updateAuthNav,
+        initPageNav,
         requireAuth,
+        requireCreator,
     };
 })(window);

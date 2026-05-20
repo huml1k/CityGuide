@@ -1,7 +1,5 @@
 using System.Text;
-using AuthService.AuthKit.Internal;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -42,6 +40,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton(options);
         services.AddSingleton<IOptions<CityGuideAuthOptions>>(_ => Options.Create(options));
         services.AddAuthorization();
+        services.AddHttpContextAccessor();
 
         services
             .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -56,39 +55,9 @@ public static class ServiceCollectionExtensions
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(options.JwtSecret)),
                     ValidateLifetime = options.ValidateLifetime,
-                    ClockSkew = TimeSpan.Zero
-                };
-
-                jwt.Events = new JwtBearerEvents
-                {
-                    OnTokenValidated = context =>
-                    {
-                        if (context.Principal?.Identity is System.Security.Claims.ClaimsIdentity identity)
-                        {
-                            var authorization = context.HttpContext.Request.Headers.Authorization.ToString();
-                            var accessToken = authorization.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)
-                                ? authorization["Bearer ".Length..].Trim()
-                                : null;
-
-                            if (!string.IsNullOrWhiteSpace(accessToken))
-                            {
-                                identity.AddClaim(new System.Security.Claims.Claim("raw_access_token", accessToken));
-                            }
-                        }
-
-                        return Task.CompletedTask;
-                    }
+                    ClockSkew = TimeSpan.FromMinutes(1)
                 };
             });
-
-        services.AddHttpContextAccessor();
-        services.AddHttpClient<AuthIntrospectionClient>((provider, client) =>
-        {
-            var settings = provider.GetRequiredService<CityGuideAuthOptions>();
-            client.BaseAddress = new Uri(settings.IntrospectionBaseUrl);
-        });
-
-        services.AddTransient<Microsoft.AspNetCore.Authentication.IClaimsTransformation, IntrospectionClaimsTransformation>();
 
         return services;
     }
@@ -99,11 +68,5 @@ public static class ServiceCollectionExtensions
         {
             throw new InvalidOperationException("CityGuideAuth:JwtSecret must be at least 32 chars.");
         }
-
-        if (string.IsNullOrWhiteSpace(options.IntrospectionBaseUrl))
-        {
-            throw new InvalidOperationException("CityGuideAuth:IntrospectionBaseUrl is required.");
-        }
     }
 }
-

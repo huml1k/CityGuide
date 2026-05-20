@@ -234,7 +234,7 @@
         }
         try {
             const json = JSON.parse(text);
-            return json.message || json.error || json.title || text;
+            return json.message || json.Message || json.error || json.title || text;
         } catch {
             return text;
         }
@@ -390,8 +390,8 @@
     }
 
     function getLoginPath() {
-        const path = window.location.pathname || '';
-        if (path.includes('/pages/')) {
+        const utils = global.CityGuideUtils;
+        if (utils?.isInPagesSubfolder?.()) {
             return 'login.html';
         }
         return 'pages/login.html';
@@ -403,8 +403,12 @@
         return saveAuth(data);
     }
 
-    async function register(email, password) {
-        const data = await authRequest('/api/auth/register', { email, password });
+    async function register(email, password, registerAsCreator = false) {
+        const data = await authRequest('/api/auth/register', {
+            email,
+            password,
+            registerAsCreator,
+        });
         return saveAuth(data);
     }
 
@@ -428,7 +432,7 @@
 
     // ——— User profile ———
     async function getMyProfile() {
-        return apiRequest('/api/UserProfiles/me');
+        return apiRequest('/api/UserProfiles/me', { skipAuthRedirect: true });
     }
 
     async function getProfileById(userId) {
@@ -445,6 +449,10 @@
     // ——— Routes ———
     async function getRoutes() {
         return apiRequest('/api/routes');
+    }
+
+    async function getMyRoutes() {
+        return apiRequest('/api/routes/mine');
     }
 
     async function searchRoutes(search) {
@@ -591,6 +599,7 @@
         getProfileById,
         updateMyProfile,
         getRoutes,
+        getMyRoutes,
         searchRoutes,
         getRouteById,
         createRoute,

@@ -48,14 +48,23 @@ docker compose -f infrastructure/docker-compose.yml up --build
 
 ### Быстрый “деплой” в Docker Desktop (Windows / PowerShell)
 
+Сначала инфраструктура, затем API-сервисы:
+
 ```powershell
+.\infrastructure\start-infra.ps1
 .\infrastructure\deploy.ps1
 ```
 
-Остановка:
+Остановка API:
 
 ```powershell
 .\infrastructure\stop.ps1
+```
+
+Остановка инфраструктуры:
+
+```powershell
+.\infrastructure\stop-infra.ps1
 ```
 
 

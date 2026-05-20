@@ -1,4 +1,4 @@
-﻿using ContentService.Application.Common.Exceptions;
+using ContentService.Application.Common.Exceptions;
 using ContentService.Application.Features.Routes.Queries.GetRoutes;
 using ContentService.Domain.Interfaces.Repositories;
 using MediatR;
@@ -19,16 +19,9 @@ namespace ContentService.Application.Features.Tags.Queries.GetTags
         {
             var tags = await _tagRepository.GetAllAsync(cancellationToken);
 
-            if (tags is null)
+            if (tags is null || !tags.Any())
             {
-                throw new NotFoundException(
-                    "Tags were not found.");
-            }
-
-            if (!tags.Any())
-            {
-                throw new NotFoundException(
-                    "Tags collection is empty.");
+                return Array.Empty<GetTagsResponse>();
             }
 
             if (tags.Any(x => string.IsNullOrWhiteSpace(x.Name)))

@@ -22,7 +22,11 @@ public sealed class AuthController : ControllerBase
     {
         try
         {
-            var result = await _authService.RegisterAsync(request.Email, request.Password, cancellationToken);
+            var result = await _authService.RegisterAsync(
+                request.Email,
+                request.Password,
+                request.RegisterAsCreator,
+                cancellationToken);
             return Created($"/api/auth/users/{result.UserId}", AuthResponse.FromResult(result));
         }
         catch (BadRequestException ex)

@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using UserService.Application.Dtos;
 using UserService.Application.Interfaces.Service;
@@ -27,8 +29,11 @@ public class UserProfileService : IUserProfileService
     public async Task<UserProfileDto> GetMyProfileAsync(CancellationToken ct = default)
     {
         var userId = GetCurrentUserId();
-        var profile = await _repository.GetByIdAsync(userId)
-            ?? throw new NotFoundException($"Profile for user {userId} not found");
+        var profile = await _repository.GetByIdAsync(userId);
+        if (profile is null)
+        {
+            return new UserProfileDto { UserId = userId };
+        }
 
         return MapToDto(profile);
     }
@@ -91,9 +96,17 @@ public class UserProfileService : IUserProfileService
 
     private Guid GetCurrentUserId()
     {
-        var claim = _httpContextAccessor.HttpContext?.User?.FindFirst("sub");
+        var user = _httpContextAccessor.HttpContext?.User;
+        var claim =
+            user?.FindFirst(JwtRegisteredClaimNames.Sub)
+            ?? user?.FindFirst("sub")
+            ?? user?.FindFirst(ClaimTypes.NameIdentifier);
+
         if (claim is null || !Guid.TryParse(claim.Value, out var userId))
+        {
             throw new UnauthorizedAccessException("User is not authenticated or invalid user ID");
+        }
+
         return userId;
     }
 }

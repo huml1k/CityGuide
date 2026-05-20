@@ -18,7 +18,8 @@
         submitBtn.disabled = true;
 
         try {
-            await api.register(email, password);
+            const registerAsCreator = document.getElementById('isCreator')?.checked === true;
+            await api.register(email, password, registerAsCreator);
             const role = (api.getCurrentRole() || '').toLowerCase();
             if (role === 'admin') {
                 window.location.href = 'admin-moderation.html';

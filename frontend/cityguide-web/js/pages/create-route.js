@@ -83,7 +83,7 @@
     document.getElementById('createRouteForm')?.addEventListener('submit', async function onSubmit(e) {
         e.preventDefault();
 
-        if (!(await utils.requireAuth('login.html'))) return;
+        if (!(await utils.requireCreator('login.html'))) return;
 
         const submitBtn = e.target.querySelector('button[type="submit"]');
         const errorEl = document.getElementById('formError');
@@ -115,9 +115,14 @@
                 googleMapsUrl: document.getElementById('mapUrl').value.trim(),
             });
 
+            const routeId = created?.id ?? created?.Id;
+            if (!routeId) {
+                throw new Error('Сервер не вернул идентификатор маршрута');
+            }
+
             for (let i = 0; i < selectedPhotos.length; i++) {
                 await api.uploadRouteImage(
-                    created.id,
+                    routeId,
                     selectedPhotos[i].file,
                     i === 0,
                     i
@@ -126,10 +131,10 @@
 
             const audioFile = document.getElementById('audioInput').files[0];
             if (audioFile) {
-                await api.uploadRouteAudio(created.id, audioFile);
+                await api.uploadRouteAudio(routeId, audioFile);
             }
 
-            api.addMyRouteId(created.id);
+            api.addMyRouteId(routeId);
 
             utils.showToast(
                 'Маршрут создан и отправлен на модерацию',
@@ -144,7 +149,8 @@
     });
 
     document.addEventListener('DOMContentLoaded', async () => {
-        if (!(await utils.requireAuth('login.html'))) return;
+        if (!(await utils.requireCreator('login.html'))) return;
+        await utils.initPageNav();
         loadTagsFromApi();
     });
 })();

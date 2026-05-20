@@ -1,4 +1,4 @@
-﻿using ContentService.Application.Common.Exceptions;
+using ContentService.Application.Common.Exceptions;
 using ContentService.Domain.Interfaces.Repositories;
 using MediatR;
 using System;
@@ -19,16 +19,9 @@ namespace ContentService.Application.Features.Routes.Queries.GetPendingRoutes
         {
             var routes = await _routeRepository.GetPendingModerationAsync(cancellationToken);
 
-            if (routes is null)
+            if (routes is null || !routes.Any())
             {
-                throw new NotFoundException(
-                    "Routes were not found.");
-            }
-
-            if (!routes.Any())
-            {
-                throw new NotFoundException(
-                    "Routes collection is empty.");
+                return Array.Empty<GetPendingRoutesResponse>();
             }
 
             if (routes.Any(x => x.RouteImages is null))

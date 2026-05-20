@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using UserService.Domain.Entities;
 using UserService.Domain.Interfaces;
 using UserService.Infrastructure.Persistence;
@@ -16,7 +16,7 @@ public class FavoritesRepository : IFavoritesRepository
     
     public async Task<IReadOnlyCollection<Guid>> GetUserFavoritesAsync(Guid userId, CancellationToken ct = default)
     {
-        return await _context.Favorites.Where(f => f.UserId == userId).Select(x => x.Id).ToListAsync(ct);
+        return await _context.Favorites.Where(f => f.UserId == userId).Select(x => x.RouteId).ToListAsync(ct);
     }
 
     public async Task<IReadOnlyCollection<Guid>> GetRouteFavoritesAsync(Guid routeId,  CancellationToken ct = default)

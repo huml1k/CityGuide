@@ -3,6 +3,5 @@ $ErrorActionPreference = "Stop"
 $composeFile = Join-Path $PSScriptRoot "docker-compose.yml"
 $envFile = Join-Path $PSScriptRoot ".env"
 
-Write-Host "Stopping CityGuide API services (profile: apps)..."
-docker compose --env-file $envFile -f $composeFile --profile apps down
-
+Write-Host "Stopping CityGuide infrastructure containers..."
+docker compose --env-file $envFile -f $composeFile --profile infra down

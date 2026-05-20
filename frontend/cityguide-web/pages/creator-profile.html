@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CityGuide - Профиль Creator</title>
+    <title>CityGuide - Профиль автора</title>
     <link rel="stylesheet" href="../css/styles.css">
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
@@ -15,12 +15,12 @@
     <header class="bg-blue-600 text-white shadow-md">
         <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
             <h1 onclick="window.location.href='../index.html'" class="text-3xl font-bold cursor-pointer">CityGuide</h1>
-            <a href="../index.html" class="hover:underline">Главная</a>
+            <nav id="mainNav" class="flex items-center gap-6"></nav>
         </div>
     </header>
 
     <div class="max-w-5xl mx-auto px-6 py-10">
-        <h1 class="text-4xl font-bold mb-8">Профиль Creator</h1>
+        <h1 class="text-4xl font-bold mb-8">Профиль автора</h1>
 
         <div class="bg-white rounded-3xl shadow p-8 mb-10">
             <div class="flex items-center gap-6 mb-8">
@@ -36,10 +36,17 @@
                 </div>
             </div>
 
-            <a href="create-route.html"
-                class="inline-block bg-green-600 text-white px-8 py-4 rounded-2xl font-semibold mb-8 hover:bg-green-700 transition">
-                ➕ Создать новый маршрут
-            </a>
+            <div class="flex flex-wrap gap-4 mb-4">
+                <a href="create-route.html"
+                    class="inline-block bg-green-600 text-white px-8 py-4 rounded-2xl font-semibold hover:bg-green-700 transition">
+                    ➕ Создать новый маршрут
+                </a>
+                <button type="button" onclick="saveCreatorProfile()"
+                    class="inline-block bg-blue-600 text-white px-8 py-4 rounded-2xl font-semibold hover:bg-blue-700 transition">
+                    Сохранить профиль
+                </button>
+            </div>
+            <p id="saveStatus" class="hidden mb-4 text-sm"></p>
         </div>
 
         <!-- Мои маршруты -->
@@ -50,8 +57,12 @@
 
         <!-- Уведомления для Creator -->
         <div class="mt-12 bg-white rounded-3xl shadow p-8">
-            <div class="flex justify-between items-center mb-6">
+            <div class="flex justify-between items-center mb-6 flex-wrap gap-3">
                 <h2 class="text-2xl font-semibold">🛎 Уведомления</h2>
+                <button type="button" id="markAllReadBtn" onclick="markAllCreatorNotificationsRead()"
+                    class="hidden px-4 py-2 border border-gray-300 rounded-xl hover:bg-gray-50 text-sm">
+                    Прочитать все
+                </button>
             </div>
 
             <div id="creatorNotifications" class="space-y-4">

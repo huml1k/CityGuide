@@ -1,6 +1,7 @@
 ﻿using ContentService.Application.Features.Routes.Commands.CreateRoute;
 using ContentService.Application.Features.Routes.Commands.DeleteRoute;
 using ContentService.Application.Features.Routes.Commands.UpdateRoute;
+using ContentService.Application.Features.Routes.Queries.GetMyRoutes;
 using ContentService.Application.Features.Routes.Queries.GetRouteById;
 using ContentService.Application.Features.Routes.Queries.GetRoutes;
 using ContentService.Application.Features.Routes.Queries.SearchRoutes;
@@ -53,6 +54,14 @@ namespace ContentService.Api.Controllers
             await _mediator.Send(command, cancellationToken);
 
             return NoContent();
+        }
+
+        [Authorize]
+        [HttpGet("mine")]
+        public async Task<IActionResult> GetMine(CancellationToken cancellationToken)
+        {
+            var result = await _mediator.Send(new GetMyRoutesQuery(), cancellationToken);
+            return Ok(result);
         }
 
         //get by id
