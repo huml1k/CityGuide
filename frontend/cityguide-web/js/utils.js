@@ -48,14 +48,73 @@
         return `https://placehold.co/600x400/2563eb/ffffff?text=${text}`;
     }
 
+    const TOAST_DURATION_MS = 4500;
+
+    function ensureToastRoot() {
+        let root = document.getElementById('cg-toast-root');
+        if (!root) {
+            root = document.createElement('div');
+            root.id = 'cg-toast-root';
+            root.className =
+                'fixed top-4 right-4 z-[9999] flex flex-col gap-2 max-w-sm w-full pointer-events-none';
+            root.setAttribute('aria-live', 'polite');
+            document.body.appendChild(root);
+        }
+        return root;
+    }
+
+    function showToast(message, type = 'error') {
+        if (!message) return;
+
+        const root = ensureToastRoot();
+        const styles = {
+            error: 'bg-red-50 text-red-800 border-red-200',
+            success: 'bg-green-50 text-green-800 border-green-200',
+            info: 'bg-blue-50 text-blue-800 border-blue-200',
+        };
+        const toast = document.createElement('div');
+        toast.className = `pointer-events-auto px-4 py-3 rounded-xl border shadow-lg text-sm ${styles[type] || styles.error}`;
+        toast.textContent = message;
+
+        const close = () => {
+            toast.classList.add('opacity-0', 'translate-x-2', 'transition-all', 'duration-200');
+            setTimeout(() => toast.remove(), 200);
+        };
+
+        toast.addEventListener('click', close);
+        root.appendChild(toast);
+        setTimeout(close, TOAST_DURATION_MS);
+    }
+
+    /** @deprecated Используйте showToast */
     function showAlert(message, type = 'error') {
-        const prefix = type === 'success' ? '✅ ' : type === 'info' ? 'ℹ️ ' : '⚠️ ';
-        alert(prefix + message);
+        showToast(message, type);
+    }
+
+    function showFormMessage(element, message, type = 'error') {
+        if (!element) {
+            showToast(message, type);
+            return;
+        }
+        element.textContent = message;
+        element.classList.remove('hidden', 'text-red-600', 'text-green-600', 'bg-red-50', 'bg-green-50', 'text-red-700');
+        if (type === 'success') {
+            element.classList.add('text-green-600');
+        } else {
+            element.classList.add('text-red-700', 'bg-red-50');
+        }
+        element.classList.remove('hidden');
+    }
+
+    function hideFormMessage(element) {
+        if (!element) return;
+        element.textContent = '';
+        element.classList.add('hidden');
     }
 
     function showInlineError(container, message) {
         if (!container) {
-            showAlert(message);
+            showToast(message, 'error');
             return;
         }
         container.innerHTML = `
@@ -97,10 +156,12 @@
         return 60;
     }
 
-    function updateAuthNav(navEl) {
+    async function updateAuthNav(navEl) {
         if (!navEl) return;
         const api = global.CityGuideApi;
         if (!api) return;
+
+        await api.initAuth();
 
         if (api.isLoggedIn()) {
             const role = (api.getCurrentRole() || '').toLowerCase();
@@ -131,8 +192,14 @@
         }
     }
 
-    function requireAuth(loginPath = 'login.html') {
-        if (!global.CityGuideApi?.isLoggedIn()) {
+    async function requireAuth(loginPath = 'login.html') {
+        const api = global.CityGuideApi;
+        if (!api) {
+            window.location.href = loginPath;
+            return false;
+        }
+        const ok = await api.ensureAuthenticated();
+        if (!ok) {
             window.location.href = loginPath;
             return false;
         }
@@ -145,7 +212,10 @@
         formatRelativeTime,
         getQueryParam,
         getRoutePlaceholder,
+        showToast,
         showAlert,
+        showFormMessage,
+        hideFormMessage,
         showInlineError,
         showLoading,
         escapeHtml,

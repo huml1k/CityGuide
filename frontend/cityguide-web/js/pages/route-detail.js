@@ -63,7 +63,7 @@
                 countEl.textContent = count + 1;
             }
         } catch (err) {
-            utils.showAlert(err.message);
+            utils.showToast(err.message, 'error');
         }
     }
 
@@ -71,7 +71,7 @@
 
     async function loadRoute() {
         if (!routeId) {
-            utils.showAlert('Маршрут не указан');
+            utils.showToast('Маршрут не указан', 'error');
             window.location.href = '../index.html';
             return;
         }
@@ -138,15 +138,15 @@
                 }
             }
         } catch (err) {
-            utils.showAlert(err.message);
+            utils.showToast(err.message, 'error');
             setTimeout(() => { window.location.href = '../index.html'; }, 1500);
         } finally {
             loadingEl?.classList.add('hidden');
         }
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
-        utils.updateAuthNav(document.getElementById('mainNav'));
+    document.addEventListener('DOMContentLoaded', async () => {
+        await utils.updateAuthNav(document.getElementById('mainNav'));
         loadRoute();
     });
 })();

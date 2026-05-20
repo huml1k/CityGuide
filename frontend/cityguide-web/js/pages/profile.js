@@ -48,16 +48,16 @@
     }
 
     async function loadProfile() {
-        if (!utils.requireAuth('login.html')) return;
+        if (!(await utils.requireAuth('login.html'))) return;
 
         try {
             const profile = await api.getMyProfile();
             document.getElementById('userName').value = profile.fullName || '';
             document.getElementById('userEmail').textContent =
-                localStorage.getItem(CityGuideApi.STORAGE_KEYS.email) || '—';
+                api.getClaims().email || '—';
         } catch (err) {
             if (err.message.includes('авторизац')) return;
-            utils.showAlert('Профиль: ' + err.message);
+            utils.showToast('Профиль: ' + err.message, 'error');
         }
     }
 
@@ -66,21 +66,9 @@
         const statusEl = document.getElementById('saveStatus');
         try {
             await api.updateMyProfile({ fullName });
-            if (statusEl) {
-                statusEl.textContent = 'Сохранено';
-                statusEl.classList.remove('hidden', 'text-red-600');
-                statusEl.classList.add('text-green-600');
-            } else {
-                utils.showAlert('Профиль сохранён', 'success');
-            }
+            utils.showFormMessage(statusEl, 'Сохранено', 'success');
         } catch (err) {
-            if (statusEl) {
-                statusEl.textContent = err.message;
-                statusEl.classList.remove('hidden', 'text-green-600');
-                statusEl.classList.add('text-red-600');
-            } else {
-                utils.showAlert(err.message);
-            }
+            utils.showFormMessage(statusEl, err.message, 'error');
         }
     };
 

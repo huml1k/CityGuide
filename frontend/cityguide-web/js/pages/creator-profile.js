@@ -5,14 +5,14 @@
     let displayedCount = 5;
 
     async function loadProfile() {
-        if (!utils.requireAuth('login.html')) return;
+        if (!(await utils.requireAuth('login.html'))) return;
 
         try {
             const profile = await api.getMyProfile();
             document.getElementById('creatorName').value = profile.fullName || '';
         } catch (err) {
             if (!err.message.includes('авторизац')) {
-                utils.showAlert(err.message);
+                utils.showToast(err.message, 'error');
             }
         }
     }
@@ -52,7 +52,7 @@
                         api.removeMyRouteId(route.id);
                         el.remove();
                     } catch (err) {
-                        utils.showAlert(err.message);
+                        utils.showToast(err.message, 'error');
                     }
                 });
                 container.appendChild(el);

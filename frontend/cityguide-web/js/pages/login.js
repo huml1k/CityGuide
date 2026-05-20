@@ -13,8 +13,8 @@
         submitBtn.disabled = true;
 
         try {
-            const data = await api.login(email, password);
-            const role = (data.role || '').toLowerCase();
+            await api.login(email, password);
+            const role = (api.getCurrentRole() || '').toLowerCase();
             if (role === 'admin') {
                 window.location.href = 'admin-moderation.html';
             } else if (role === 'creator') {
@@ -23,12 +23,7 @@
                 window.location.href = '../index.html';
             }
         } catch (err) {
-            if (errorEl) {
-                errorEl.textContent = err.message;
-                errorEl.classList.remove('hidden');
-            } else {
-                utils.showAlert(err.message);
-            }
+            utils.showFormMessage(errorEl, err.message, 'error');
         } finally {
             submitBtn.disabled = false;
         }

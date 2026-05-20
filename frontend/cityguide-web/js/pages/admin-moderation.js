@@ -62,7 +62,7 @@
                 </p>`;
             card.style.opacity = '0.7';
         } catch (err) {
-            utils.showAlert(err.message);
+            utils.showToast(err.message, 'error');
         }
     }
 

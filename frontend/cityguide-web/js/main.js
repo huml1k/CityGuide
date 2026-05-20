@@ -73,7 +73,7 @@
             const count = parseInt(countEl.textContent, 10) || 0;
             countEl.textContent = wasFavorite ? Math.max(0, count - 1) : count + 1;
         } catch (err) {
-            utils.showAlert(err.message);
+            utils.showToast(err.message, 'error');
         }
     }
 
@@ -170,7 +170,8 @@
     window.searchRoutes = searchRoutes;
 
     document.addEventListener('DOMContentLoaded', async () => {
-        utils.updateAuthNav(document.getElementById('mainNav'));
+        await api.initAuth();
+        await utils.updateAuthNav(document.getElementById('mainNav'));
         await loadTagsFilter();
         await loadFavoriteIds();
         await loadRoutes();

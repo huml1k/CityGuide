@@ -29,7 +29,7 @@
     }
 
     async function loadFavorites() {
-        if (!utils.requireAuth('login.html')) return;
+        if (!(await utils.requireAuth('login.html'))) return;
 
         const container = document.getElementById('favoritesContainer');
         const emptyState = document.getElementById('emptyState');

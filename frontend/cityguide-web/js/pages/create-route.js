@@ -76,30 +76,31 @@
             btn.classList.add('bg-blue-600', 'text-white');
             btn.classList.remove('bg-gray-200');
         } else {
-            utils.showAlert('Можно выбрать максимум 3 тега');
+            utils.showToast('Можно выбрать максимум 3 тега', 'info');
         }
     }
 
-    document.getElementById('createRouteForm')?.addEventListener('submit', async (e) => {
+    document.getElementById('createRouteForm')?.addEventListener('submit', async function onSubmit(e) {
         e.preventDefault();
 
-        if (!utils.requireAuth('login.html')) return;
+        if (!(await utils.requireAuth('login.html'))) return;
 
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        const errorEl = document.getElementById('formError');
         const creatorId = api.getCurrentUserId();
+
         if (!creatorId) {
-            utils.showAlert('Не удалось определить пользователя. Войдите снова.');
+            utils.showFormMessage(errorEl, 'Не удалось определить пользователя. Войдите снова.', 'error');
             return;
         }
 
         if (selectedPhotos.length === 0) {
-            utils.showAlert('Добавьте хотя бы одну фотографию');
+            utils.showFormMessage(errorEl, 'Добавьте хотя бы одну фотографию', 'error');
             return;
         }
 
-        const submitBtn = e.target.querySelector('button[type="submit"]');
-        const errorEl = document.getElementById('formError');
         submitBtn.disabled = true;
-        errorEl?.classList.add('hidden');
+        utils.hideFormMessage(errorEl);
 
         try {
             const durationMinutes = utils.parseDurationMinutes(
@@ -130,25 +131,20 @@
 
             api.addMyRouteId(created.id);
 
-            utils.showAlert(
-                'Маршрут создан и отправлен на модерацию. После одобрения он появится в каталоге.',
+            utils.showToast(
+                'Маршрут создан и отправлен на модерацию',
                 'success'
             );
             window.location.href = 'creator-profile.html';
         } catch (err) {
-            if (errorEl) {
-                errorEl.textContent = err.message;
-                errorEl.classList.remove('hidden');
-            } else {
-                utils.showAlert(err.message);
-            }
+            utils.showFormMessage(errorEl, err.message, 'error');
         } finally {
             submitBtn.disabled = false;
         }
     });
 
-    document.addEventListener('DOMContentLoaded', () => {
-        if (!utils.requireAuth('login.html')) return;
+    document.addEventListener('DOMContentLoaded', async () => {
+        if (!(await utils.requireAuth('login.html'))) return;
         loadTagsFromApi();
     });
 })();

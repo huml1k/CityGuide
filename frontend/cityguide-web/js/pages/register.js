@@ -10,30 +10,25 @@
         const submitBtn = e.target.querySelector('button[type="submit"]');
 
         if (password.length < 6) {
-            const msg = 'Пароль должен быть не короче 6 символов';
-            if (errorEl) {
-                errorEl.textContent = msg;
-                errorEl.classList.remove('hidden');
-            } else {
-                utils.showAlert(msg);
-            }
+            utils.showFormMessage(errorEl, 'Пароль должен быть не короче 6 символов', 'error');
             return;
         }
 
-        errorEl?.classList.add('hidden');
+        utils.hideFormMessage(errorEl);
         submitBtn.disabled = true;
 
         try {
             await api.register(email, password);
-            utils.showAlert('Регистрация успешна! Войдите в аккаунт.', 'success');
-            window.location.href = 'login.html';
-        } catch (err) {
-            if (errorEl) {
-                errorEl.textContent = err.message;
-                errorEl.classList.remove('hidden');
+            const role = (api.getCurrentRole() || '').toLowerCase();
+            if (role === 'admin') {
+                window.location.href = 'admin-moderation.html';
+            } else if (role === 'creator') {
+                window.location.href = 'creator-profile.html';
             } else {
-                utils.showAlert(err.message);
+                window.location.href = '../index.html';
             }
+        } catch (err) {
+            utils.showFormMessage(errorEl, err.message, 'error');
         } finally {
             submitBtn.disabled = false;
         }
