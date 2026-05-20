@@ -1,7 +1,8 @@
 using AuthService.AuthKit;
+using ContentService.Api.Middleware;
+using ContentService.Application;
 using ContentService.Application.Features.Routes.Commands.CreateRoute;
 using ContentService.Infrastructure;
-using ContentService.Application;
 using ContentService.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,6 +18,8 @@ builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddApplication();
 
 var app = builder.Build();
+
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {

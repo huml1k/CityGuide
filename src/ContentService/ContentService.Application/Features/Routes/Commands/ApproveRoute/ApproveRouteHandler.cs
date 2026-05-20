@@ -1,4 +1,5 @@
-﻿using ContentService.Application.DTOs;
+﻿using ContentService.Application.Common.Exceptions;
+using ContentService.Application.DTOs;
 using ContentService.Application.Interfaces;
 using ContentService.Domain.Enums;
 using ContentService.Domain.Interfaces.Repositories;
@@ -34,7 +35,19 @@ namespace ContentService.Application.Features.Routes.Commands.ApproveRoute
 
             if (route is null)
             {
-                throw new Exception("Route not found");
+                throw new RouteNotFoundException(request.RouteId);
+            }
+
+            if (route.Status == RouteStatus.approved)
+            {
+                throw new BusinessRuleException(
+                    "Route is already approved.");
+            }
+
+            if (route.DeletedAt.HasValue)
+            {
+                throw new BusinessRuleException(
+                    "Deleted route cannot be approved.");
             }
 
 
@@ -42,8 +55,15 @@ namespace ContentService.Application.Features.Routes.Commands.ApproveRoute
 
             _routeRepository.Update(route);
 
-            await _unitOfWork.SaveChangesAsync(
+            var saved = await _unitOfWork.SaveChangesAsync(
                 cancellationToken);
+
+
+            if (saved <= 0)
+            {
+                throw new BusinessRuleException(
+                    "Failed to approve route.");
+            }
 
             await _kafkaEventPublisher.PublishAsync("content.routes", new ContentEventDto
             {

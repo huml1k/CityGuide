@@ -1,11 +1,12 @@
-﻿using ContentService.Domain.Entities;
+﻿using ContentService.Application.Common.Exceptions;
+using ContentService.Application.Interfaces;
+using ContentService.Domain.Entities;
 using ContentService.Domain.Interfaces.Repositories;
 using MediatR;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Text;
-using ContentService.Application.Interfaces;
-using Microsoft.Extensions.Logging;
 
 namespace ContentService.Application.Features.Files.Commands.UploadAudioFile
 {
@@ -30,9 +31,43 @@ namespace ContentService.Application.Features.Files.Commands.UploadAudioFile
         public async Task<UploadAudioFileResponse> Handle(UploadAudioFileCommand request, CancellationToken cancellationToken)
         {
             var extension = Path.GetExtension(request.File.FileName);
+
+            if (request.File is null)
+            {
+                throw new ValidationException(
+                    new Dictionary<string, string[]>
+                    {
+            {
+                nameof(request.File),
+                new[] { "Audio file is required." }
+            }
+                    });
+            }
+
+            if (request.File.Length == 0)
+            {
+                throw new ValidationException(
+                    new Dictionary<string, string[]>
+                    {
+            {
+                nameof(request.File),
+                new[] { "Audio file is empty." }
+            }
+                    });
+            }
+
+            if (string.IsNullOrWhiteSpace(extension))
+            {
+                throw new InvalidFileException(
+                    "Audio file extension is invalid.");
+            }
+
             if (!await _routeRepository.ExistsAsync(request.RouteId, cancellationToken))
-                throw new Exception("Path does not exist");
-            
+            {
+                throw new RouteNotFoundException(
+                    request.RouteId);
+            }
+
             var audio = new AudioFile
             {
                 Id = Guid.NewGuid(),
@@ -42,17 +77,38 @@ namespace ContentService.Application.Features.Files.Commands.UploadAudioFile
             };
             
             var objectKey = $"{audio.Id}{extension}";
-            
-            await _fileStorageService.UploadFileAsync(
-                request.File.OpenReadStream(),
-                objectKey,
-                request.File.ContentType,
-                cancellationToken);
-            
+
+            if (string.IsNullOrWhiteSpace(request.File.ContentType))
+            {
+                throw new InvalidFileException(
+                    "Audio content type is invalid.");
+            }
+
+            try
+            {
+                await _fileStorageService.UploadFileAsync(
+                    request.File.OpenReadStream(),
+                    objectKey,
+                    request.File.ContentType,
+                    cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                throw new FileUploadException(
+                    "Failed to upload audio file.",
+                    ex);
+            }
+
             audio.Path = objectKey;
             
             await _audioRepository.AddAsync(audio, cancellationToken);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            var saved = await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            if (saved <= 0)
+            {
+                throw new BusinessRuleException(
+                    "Failed to save audio file metadata.");
+            }
 
             return new UploadAudioFileResponse
             {
