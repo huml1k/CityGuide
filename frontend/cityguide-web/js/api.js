@@ -330,7 +330,7 @@
             }
             const token = getToken();
             if (token) {
-                headers.Authorization = `${token}`;
+                headers.Authorization = `Bearer ${token}`;
             }
             return headers;
         };
