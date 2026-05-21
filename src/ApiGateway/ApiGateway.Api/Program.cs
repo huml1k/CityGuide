@@ -1,3 +1,4 @@
+using System.Threading.RateLimiting;
 using Yarp.ReverseProxy.Transforms;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -5,13 +6,6 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
-
-
-
-builder.Services.AddAuthorization(options => 
-{
-    options.AddPolicy("Authenticated", policy => policy.RequireAuthenticatedUser());
-});
 
 builder.Services.AddCors(cors =>
 {
@@ -23,6 +17,41 @@ builder.Services.AddCors(cors =>
         .AllowCredentials());
 });
 
+builder.Services.AddRateLimiter(options => 
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.OnRejected = async (context, token) =>
+    {
+        context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+        await context.HttpContext.Response.WriteAsync(
+            "Too many requests. Please try again later", token);
+    };
+
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(ctx =>
+        RateLimitPartition.GetFixedWindowLimiter
+        (
+            partitionKey: ctx.Connection.RemoteIpAddress?.ToString() ?? "unknow",
+            factory: _ => new FixedWindowRateLimiterOptions 
+            { 
+                PermitLimit = builder.Configuration.GetValue<int>("RateLimiting:Global:PermitLimit", 100),
+                Window = TimeSpan.Parse(builder.Configuration.GetValue<string>("RateLimiting:Global:Window", "00:01:00")),
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                QueueLimit = builder.Configuration.GetValue<int>("RateLimiting:Global:QueueLimit", 0)
+            }
+        ));
+
+    options.AddPolicy("AuthLimit", ctx =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: ctx.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = builder.Configuration.GetValue<int>("RateLimiting:Auth:PermitLimit", 10),
+                Window = TimeSpan.Parse(builder.Configuration.GetValue<string>("RateLimiting:Auth:Window", "00:01:00")),
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                QueueLimit = 0
+            }));
+});
+
 builder.Services.AddReverseProxy()
     .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"))
     .AddTransforms(transformBuilder => 
@@ -32,17 +61,8 @@ builder.Services.AddReverseProxy()
             var logger = transformContext.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
             var correlationId = Guid.NewGuid().ToString("N");
 
-            // Добавляем Correlation ID для сквозной трассировки
             transformContext.ProxyRequest.Headers.Remove("X-Correlation-Id");
             transformContext.ProxyRequest.Headers.TryAddWithoutValidation("X-Correlation-Id", correlationId);
-
-            // Извлекаем UserId из JWT (claim "sub")
-            var userId = transformContext.HttpContext.User.FindFirst("sub")?.Value;
-            if (!string.IsNullOrEmpty(userId))
-            {
-                transformContext.ProxyRequest.Headers.Remove("X-User-Id");
-                transformContext.ProxyRequest.Headers.TryAddWithoutValidation("X-User-Id", userId);
-            }
 
             logger.LogInformation("Proxy: {Method} {Path} [CorrelationId: {CorrelationId}]",
                 transformContext.HttpContext.Request.Method,
@@ -82,6 +102,7 @@ app.Use(async (context, next) =>
 
 
 app.UseHttpsRedirection();
+<<<<<<< Updated upstream
 
 //var summaries = new[]
 //{
@@ -101,6 +122,10 @@ app.UseHttpsRedirection();
 //    return forecast;
 //})
 //.WithName("GetWeatherForecast");
+=======
+app.UseRateLimiter();
+app.UseCors("AllowFrontend");
+>>>>>>> Stashed changes
 
 app.MapReverseProxy();
 
