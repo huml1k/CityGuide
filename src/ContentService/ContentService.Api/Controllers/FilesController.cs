@@ -103,11 +103,10 @@ namespace ContentService.Api.Controllers
         /// </summary>
         /// <param name="id">Id изображения</param>
         /// <param name="cancellationToken"></param>
-        /// <returns>JSON ответ с данными файла и ссылкой для скачивания</returns>
+        /// <returns>Бинарное содержимое изображения</returns>
         [AllowAnonymous]
-        [ProducesResponseType(200)]
-        [ProducesResponseType(404)]
-        [Produces("application/json")]
+        [ProducesResponseType(typeof(FileResult), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpGet("images/{id:guid}")]
         public async Task<IActionResult> GetImage(Guid id, CancellationToken cancellationToken)
         {
@@ -115,14 +114,7 @@ namespace ContentService.Api.Controllers
 
             var result = await _mediator.Send(query, cancellationToken);
 
-            return Ok(new
-            {
-                url = result.Url,
-                expiresAt = result.ExpiresAt,
-                fileName = result.FileName,
-                contentType = result.ContentType
-            });
-            //return Redirect(result.Url);
+            return File(result.Content, result.ContentType, result.FileName);
         }
 
         /// <summary>

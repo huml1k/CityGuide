@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using UserService.Domain.Entities;
 using UserService.Domain.Interfaces;
 using UserService.Infrastructure.Persistence;
@@ -30,9 +30,10 @@ public class FavoritesRepository : IFavoritesRepository
         await _context.SaveChangesAsync(ct);
     }
 
-    public void Delete(Favorite favorite)
+    public async Task DeleteFavoriteAsync(Favorite favorite, CancellationToken ct = default)
     {
         _context.Favorites.Remove(favorite);
+        await _context.SaveChangesAsync(ct);
     }
 
     public async Task<bool> IsFavoriteAsync(Guid  routeId, Guid userId, CancellationToken ct = default(CancellationToken))
@@ -45,8 +46,9 @@ public class FavoritesRepository : IFavoritesRepository
         return await _context.Favorites.ToListAsync();
     }
 
-    public async Task<Favorite> GetByUserAndRouteAsync(Guid routeId, Guid userId, CancellationToken ct = default)
+    public async Task<Favorite?> GetByUserAndRouteAsync(Guid routeId, Guid userId, CancellationToken ct = default)
     {
-        return await _context.Favorites.Where(f => f.RouteId == routeId && f.UserId == userId).FirstAsync(ct);
+        return await _context.Favorites
+            .FirstOrDefaultAsync(f => f.RouteId == routeId && f.UserId == userId, ct);
     }
 }

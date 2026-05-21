@@ -6,7 +6,7 @@
 
     function createModerationCard(route) {
         const tag = route.tags?.[0] || 'Маршрут';
-        const imageUrl = utils.getRoutePlaceholder(route.title);
+        const imageUrl = api.getRouteCoverImageUrl(route) || utils.getRoutePlaceholder(route.title);
 
         const card = document.createElement('div');
         card.className = 'route-card bg-white rounded-3xl overflow-hidden shadow';

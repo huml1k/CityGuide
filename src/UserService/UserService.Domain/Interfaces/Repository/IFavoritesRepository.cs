@@ -30,7 +30,7 @@ public interface IFavoritesRepository
     /// </summary>
     /// <param name="favorite"></param>
     /// <returns></returns>
-    public void Delete(Favorite favorite);
+    public Task DeleteFavoriteAsync(Favorite favorite, CancellationToken ct = default);
     
     /// <summary>
     /// Проверить есть ли путь в избранных у пользователя

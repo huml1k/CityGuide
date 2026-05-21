@@ -16,6 +16,8 @@ namespace ContentService.Application.Features.Routes.Queries.SearchRoutes
 
         public int FavoritesCount { get; set; }
 
+        public Guid? CoverImageId { get; set; }
+
         public string? CoverImageExtension { get; set; }
     }
 }

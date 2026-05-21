@@ -505,6 +505,15 @@
         return `${API_BASE_URL}/api/files/images/${imageId}`;
     }
 
+    /** URL обложки маршрута для списков и карточек */
+    function getRouteCoverImageUrl(route) {
+        const coverId =
+            route?.coverImageId
+            ?? route?.images?.find((i) => i.isCover)?.id
+            ?? route?.images?.[0]?.id;
+        return coverId ? getImageUrl(coverId) : null;
+    }
+
     async function uploadRouteImage(routeId, file, isCover, orderIndex) {
         const form = new FormData();
         form.append('RouteId', routeId);
@@ -610,6 +619,7 @@
         rejectRoute,
         getTags,
         getImageUrl,
+        getRouteCoverImageUrl,
         uploadRouteImage,
         uploadRouteAudio,
         getAudioMeta,

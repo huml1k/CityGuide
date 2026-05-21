@@ -29,14 +29,23 @@ namespace ContentService.Application.Features.Files.Queries.GetRouteImage
                 throw new KeyNotFoundException($"Image {request.ImageId} not found");
             if (string.IsNullOrWhiteSpace(image.Path))
                 throw new InvalidOperationException("Image has no storage path");
-            var expiry = TimeSpan.FromMinutes(request.ExpiryMinutes ?? 15);
-            var url = await _fileStorageService.GetFileUrlAsync(image.Path, cancellationToken, expiry);
+
+            var content = await _fileStorageService.DownloadFileAsync(image.Path, cancellationToken);
+            var extension = image.FileExtension.TrimStart('.').ToLowerInvariant();
+            var contentType = extension switch
+            {
+                "jpg" or "jpeg" => "image/jpeg",
+                "png" => "image/png",
+                "webp" => "image/webp",
+                "gif" => "image/gif",
+                _ => $"image/{extension}"
+            };
+
             return new GetRouteImageResponse
             {
-                Url = url,
-                ExpiresAt = DateTime.UtcNow.Add(expiry),
+                Content = content,
                 FileName = $"{image.Id}.{image.FileExtension}",
-                ContentType = $"image/{image.FileExtension}"
+                ContentType = contentType
             };
         }
     }

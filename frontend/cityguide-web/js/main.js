@@ -11,7 +11,7 @@
     function createRouteCard(route, options = {}) {
         const { basePath = 'pages/' } = options;
         const tag = route.tags?.[0] || 'Маршрут';
-        const imageUrl = utils.getRoutePlaceholder(route.title);
+        const imageUrl = api.getRouteCoverImageUrl(route) || utils.getRoutePlaceholder(route.title);
         const isFavorite = favoriteIds.has(route.id);
 
         const card = document.createElement('div');

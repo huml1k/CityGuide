@@ -52,11 +52,14 @@ services:
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
       ASPNETCORE_URLS: http://+:8080
       ConnectionStrings__DefaultConnection: Host=user-db;Port=5432;Database=${USER_DB_NAME};Username=${USER_DB_USER};Password=${USER_DB_PASSWORD}
+      Services__ContentServiceUrl: http://contentservice:8080/
     restart: unless-stopped
     ports:
       - "${USER_PORT:-8082}:8080"
     depends_on:
       authservice:
+        condition: service_started
+      contentservice:
         condition: service_started
     networks:
       - cityguide

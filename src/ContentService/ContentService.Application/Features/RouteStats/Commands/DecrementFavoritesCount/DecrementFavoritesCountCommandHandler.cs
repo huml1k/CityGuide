@@ -28,8 +28,7 @@ public class DecrementFavoritesCountCommandHandler
 
         if (stats is null)
         {
-            throw new NotFoundException(
-                $"Route stats for route '{request.RouteId}' were not found.");
+            return;
         }
 
         if (stats.FavoritesCount < 0)

@@ -8,13 +8,16 @@ public class IncrementFavoritesCountCommandHandler
     : IRequestHandler<IncrementFavoritesCountCommand>
 {
     private readonly IRouteStatsRepository _routeStatsRepository;
+    private readonly IRouteRepository _routeRepository;
     private readonly IUnitOfWork _unitOfWork;
 
     public IncrementFavoritesCountCommandHandler(
         IRouteStatsRepository routeStatsRepository,
+        IRouteRepository routeRepository,
         IUnitOfWork unitOfWork)
     {
         _routeStatsRepository = routeStatsRepository;
+        _routeRepository = routeRepository;
         _unitOfWork = unitOfWork;
     }
 
@@ -28,8 +31,26 @@ public class IncrementFavoritesCountCommandHandler
 
         if (stats is null)
         {
-            throw new NotFoundException(
-                $"Route stats for route '{request.RouteId}' were not found.");
+            if (!await _routeRepository.ExistsAsync(request.RouteId, cancellationToken))
+            {
+                throw new RouteNotFoundException(request.RouteId);
+            }
+
+            stats = new Domain.Entities.RouteStats
+            {
+                RouteId = request.RouteId,
+                FavoritesCount = 1
+            };
+
+            await _routeStatsRepository.AddAsync(stats, cancellationToken);
+
+            var created = await _unitOfWork.SaveChangesAsync(cancellationToken);
+            if (created <= 0)
+            {
+                throw new BusinessRuleException("Failed to update favorites count.");
+            }
+
+            return;
         }
 
         if (stats.FavoritesCount < 0)
@@ -50,7 +71,5 @@ public class IncrementFavoritesCountCommandHandler
             throw new BusinessRuleException(
                 "Failed to update favorites count.");
         }
-
-        return;
     }
 }

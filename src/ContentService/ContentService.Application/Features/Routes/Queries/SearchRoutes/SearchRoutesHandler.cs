@@ -1,4 +1,5 @@
 using ContentService.Application.Common.Exceptions;
+using ContentService.Application.Features.Routes;
 using ContentService.Domain.Interfaces.Repositories;
 using MediatR;
 using System;
@@ -48,16 +49,18 @@ namespace ContentService.Application.Features.Routes.Queries.SearchRoutes
                     "Some routes have missing statistics.");
             }
             return routes
-                .Select(route => new SearchRoutesResponse
+                .Select(route =>
                 {
-                    Id = route.Id,
-                    Title = route.Title,
-                    Description = route.Description,
-                    FavoritesCount = route.RouteStats.FavoritesCount,
-                    CoverImageExtension = route.RouteImages
-                        .FirstOrDefault(x => x.IsCover)?
-                        .FileExtension
-
+                    var (coverId, coverExt) = RouteCoverImageMapper.GetCover(route.RouteImages);
+                    return new SearchRoutesResponse
+                    {
+                        Id = route.Id,
+                        Title = route.Title,
+                        Description = route.Description,
+                        FavoritesCount = route.RouteStats.FavoritesCount,
+                        CoverImageId = coverId,
+                        CoverImageExtension = coverExt
+                    };
                 })
                 .ToList();
         }

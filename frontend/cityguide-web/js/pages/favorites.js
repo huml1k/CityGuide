@@ -4,9 +4,7 @@
 
     function createFavoriteCard(route) {
         const tag = route.tags?.[0] || 'Маршрут';
-        const imageUrl = route.images?.length
-            ? api.getImageUrl(route.images.find((i) => i.isCover)?.id || route.images[0].id)
-            : utils.getRoutePlaceholder(route.title);
+        const imageUrl = api.getRouteCoverImageUrl(route) || utils.getRoutePlaceholder(route.title);
 
         const card = document.createElement('div');
         card.className = 'route-card cursor-pointer bg-white rounded-2xl overflow-hidden shadow';

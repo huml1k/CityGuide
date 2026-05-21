@@ -41,13 +41,19 @@ public class MinIoFileStorage : IFileStorageService
     public async Task<Stream> DownloadFileAsync(string fileName, CancellationToken ct = default)
     {
         await EnsureBucketExistsAsync(ct);
-        
+
+        var memoryStream = new MemoryStream();
         var args = new GetObjectArgs()
             .WithBucket(_options.ContentBucket)
-            .WithFile(fileName);
-        await _client.GetObjectAsync(args, ct);
+            .WithObject(fileName)
+            .WithCallbackStream(async (source, cancellationToken) =>
+            {
+                await source.CopyToAsync(memoryStream, cancellationToken);
+            });
 
-        throw new NotImplementedException();
+        await _client.GetObjectAsync(args, ct);
+        memoryStream.Position = 0;
+        return memoryStream;
     }
 
     public async Task DeleteFileAsync(string fileName, CancellationToken ct = default)

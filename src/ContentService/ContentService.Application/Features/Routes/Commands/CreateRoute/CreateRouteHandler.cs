@@ -56,15 +56,21 @@ namespace ContentService.Application.Features.Routes.Commands.CreateRoute
             });
             }
 
+            var routeId = Guid.NewGuid();
             var route = new Route
             {
-                Id = Guid.NewGuid(),
+                Id = routeId,
                 CreatorId = request.CreatorId,
                 Title = request.Title,
                 Description = request.Description,
                 DurationMinutes = request.DurationMinutes,
                 GoogleMapsUrl = request.GoogleMapsUrl,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                RouteStats = new Domain.Entities.RouteStats
+                {
+                    RouteId = routeId,
+                    FavoritesCount = 0
+                }
             };
 
             try

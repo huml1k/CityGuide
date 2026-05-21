@@ -1,4 +1,5 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
+using System.Net.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using System.Security.Claims;
@@ -35,9 +36,10 @@ public class FavoriteService : IFavoriteService
     {
         var userId = GetCurrentUserId();
         
-        if (await _favoriteRepository.IsFavoriteAsync(userId, routeId, cancellationToken))
+        if (await _favoriteRepository.IsFavoriteAsync(routeId, userId, cancellationToken))
         {
-            throw new InvalidOperationException($"Route {routeId} is already in favorites for user {userId}");
+            var existing = await _favoriteRepository.GetByUserAndRouteAsync(routeId, userId, cancellationToken);
+            return existing!.Id;
         }
         
         var favorite = new Favorite
@@ -67,7 +69,7 @@ public class FavoriteService : IFavoriteService
     {
         var userId = GetCurrentUserId();
         
-        var favorite = await _favoriteRepository.GetByUserAndRouteAsync(userId, routeId, cancellationToken);
+        var favorite = await _favoriteRepository.GetByUserAndRouteAsync(routeId, userId, cancellationToken);
         
         if (favorite == null)
         {
@@ -75,10 +77,19 @@ public class FavoriteService : IFavoriteService
             return;
         }
         
-        _favoriteRepository.Delete(favorite);
-        //await _favoriteRepository.SaveChangesAsync(cancellationToken);
+        await _favoriteRepository.DeleteFavoriteAsync(favorite, cancellationToken);
 
-        await _contentServiceClient.DecrementFavoritesAsync(routeId);
+        try
+        {
+            await _contentServiceClient.DecrementFavoritesAsync(routeId);
+        }
+        catch (HttpRequestException ex)
+        {
+            _logger.LogWarning(
+                ex,
+                "Failed to decrement favorites count in ContentService for route {RouteId}",
+                routeId);
+        }
 
         _logger.LogInformation($"User {userId} removed route {routeId} from favorites", userId, routeId);
         
@@ -94,7 +105,7 @@ public class FavoriteService : IFavoriteService
     public async Task<bool> IsFavoriteAsync(Guid routeId, CancellationToken cancellationToken = default)
     {
         var userId = GetCurrentUserId();
-        return await _favoriteRepository.IsFavoriteAsync(userId, routeId, cancellationToken);
+        return await _favoriteRepository.IsFavoriteAsync(routeId, userId, cancellationToken);
     }
 
     public async Task<IReadOnlyCollection<Guid>> GetUserFavoriteRouteIdsAsync(CancellationToken cancellationToken = default)

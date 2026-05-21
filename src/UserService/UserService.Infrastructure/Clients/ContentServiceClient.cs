@@ -16,16 +16,24 @@ namespace UserService.Infrastructure.Clients
 
         public async Task IncrementFavoritesAsync(Guid routeId)
         {
-            await _httpClient.PostAsync(
+            var response = await _httpClient.PostAsync(
                 $"api/route-stats/{routeId}/favorite/increment",
                 null);
+            response.EnsureSuccessStatusCode();
         }
 
         public async Task DecrementFavoritesAsync(Guid routeId)
         {
-            await _httpClient.PostAsync(
+            var response = await _httpClient.PostAsync(
                 $"api/route-stats/{routeId}/favorite/decrement",
                 null);
+
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                return;
+            }
+
+            response.EnsureSuccessStatusCode();
         }
     }
 }

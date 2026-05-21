@@ -1,4 +1,5 @@
 using ContentService.Application.Common.Exceptions;
+using ContentService.Application.Features.Routes;
 using ContentService.Domain.Interfaces.Repositories;
 using MediatR;
 using System;
@@ -36,23 +37,22 @@ namespace ContentService.Application.Features.Routes.Queries.GetPendingRoutes
                     "Some routes have missing tags.");
             }
             return routes
-                .Select(route => new GetPendingRoutesResponse
+                .Select(route =>
                 {
-                    Id = route.Id,
-                    Title = route.Title,
-                    Description = route.Description,
-                    DurationMinutes = route.DurationMinutes,
-
-                    FavoritesCount =
-                        route.RouteStats?.FavoritesCount ?? 0,
-
-                    CoverImageExtension = route.RouteImages
-                        .FirstOrDefault(x => x.IsCover)?
-                        .FileExtension,
-
-                    Tags = route.RouteTags
-                        .Select(x => x.Tag.Name)
-                        .ToList()
+                    var (coverId, coverExt) = RouteCoverImageMapper.GetCover(route.RouteImages);
+                    return new GetPendingRoutesResponse
+                    {
+                        Id = route.Id,
+                        Title = route.Title,
+                        Description = route.Description,
+                        DurationMinutes = route.DurationMinutes,
+                        FavoritesCount = route.RouteStats?.FavoritesCount ?? 0,
+                        CoverImageId = coverId,
+                        CoverImageExtension = coverExt,
+                        Tags = route.RouteTags
+                            .Select(x => x.Tag.Name)
+                            .ToList()
+                    };
                 })
                 .ToList();
         }
