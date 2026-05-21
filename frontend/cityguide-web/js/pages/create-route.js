@@ -51,33 +51,64 @@
     function renderTags() {
         const container = document.getElementById('tagsContainer');
         container.innerHTML = '';
-        const names = availableTags.length
-            ? availableTags.map((t) => t.name)
-            : ['Пеший', 'Природа', 'Исторический', 'Архитектура', 'Гастрономия'];
+        const tags = availableTags.length
+            ? availableTags
+            : [];
 
-        names.forEach((tag) => {
+        tags.forEach((tag) => {
             const btn = document.createElement('button');
             btn.type = 'button';
-            const isSelected = selectedTags.includes(tag);
+            const isSelected = selectedTags.some(t => t.id === tag.id);
             btn.className = `px-5 py-2 rounded-2xl text-sm font-medium transition ${isSelected ? 'bg-blue-600 text-white' : 'bg-gray-200 hover:bg-gray-300'}`;
-            btn.textContent = tag;
+            btn.textContent = tag.name;
             btn.onclick = () => toggleTag(tag, btn);
             container.appendChild(btn);
         });
     }
 
     function toggleTag(tag, btn) {
-        if (selectedTags.includes(tag)) {
-            selectedTags = selectedTags.filter((t) => t !== tag);
+
+        const exists = selectedTags.some(t => t.id === tag.id);
+
+        if (exists) {
+
+            selectedTags = selectedTags.filter(t => t.id !== tag.id);
+
             btn.classList.remove('bg-blue-600', 'text-white');
             btn.classList.add('bg-gray-200');
+
         } else if (selectedTags.length < 3) {
+
             selectedTags.push(tag);
+
             btn.classList.add('bg-blue-600', 'text-white');
             btn.classList.remove('bg-gray-200');
+
         } else {
+
             utils.showToast('Можно выбрать максимум 3 тега', 'info');
         }
+    }
+
+    function extractGoogleMapsUrl(input) {
+
+        if (!input) return '';
+
+        input = input.trim();
+
+        // Если уже обычная ссылка
+        if (input.startsWith('https://')) {
+            return input;
+        }
+
+        // Если iframe
+        const match = input.match(/src="([^"]+)"/);
+
+        if (match && match[1]) {
+            return match[1];
+        }
+
+        return '';
     }
 
     document.getElementById('createRouteForm')?.addEventListener('submit', async function onSubmit(e) {
@@ -107,12 +138,17 @@
                 document.getElementById('duration').value
             );
 
+            const parsedMapUrl = extractGoogleMapsUrl(
+                document.getElementById('mapUrl').value
+            );
+
             const created = await api.createRoute({
                 creatorId,
                 title: document.getElementById('title').value.trim(),
                 description: document.getElementById('description').value.trim(),
                 durationMinutes,
-                googleMapsUrl: document.getElementById('mapUrl').value.trim(),
+                googleMapsUrl: parsedMapUrl,
+                tagIds: selectedTags.map(t => t.id),
             });
 
             const routeId = created?.id ?? created?.Id;
