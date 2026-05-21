@@ -37,5 +37,10 @@ namespace ContentService.Infrastructure.Repositories
         {
             return await _context.Tags.FirstOrDefaultAsync(x => x.Name == name, cancellationToken);
         }
+
+        public async Task<List<Tag>> GetByIdsAsync(List<Guid> ids, CancellationToken cancellationToken)
+        {
+            return await _context.Tags.Where(t => ids.Contains(t.Id)).ToListAsync(cancellationToken);
+        }
     }
 }

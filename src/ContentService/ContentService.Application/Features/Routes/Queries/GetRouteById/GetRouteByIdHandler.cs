@@ -1,6 +1,7 @@
 ﻿using ContentService.Application.Common.Exceptions;
 using ContentService.Application.DTOs;
 using ContentService.Application.Features.Routes.DTOs;
+using ContentService.Application.Features.Tags.DTOs;
 using ContentService.Domain.Interfaces.Repositories;
 using MediatR;
 using System;
@@ -68,9 +69,13 @@ namespace ContentService.Application.Features.Routes.Queries.GetRouteById
                     route.RouteStats?.FavoritesCount ?? 0,
 
                 Tags = route.RouteTags
-                    .Select(x => x.Tag.Name)
-                    .ToList(),
-                
+                    .Select(rt => new TagDto
+                    {
+                       Id = rt.Tag.Id,
+                        Name = rt.Tag.Name
+                    })
+                    .ToList(), 
+
                 AudioFiles = route.AudioFiles
                     .Select(x => new AudioFileDto
                     {

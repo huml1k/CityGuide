@@ -1,23 +1,20 @@
 ﻿using ContentService.Application.Common.Exceptions;
-using ContentService.Application.DTOs;
-using ContentService.Application.Interfaces;
 using ContentService.Domain.Entities;
 using ContentService.Domain.Interfaces.Repositories;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ContentService.Application.Features.Routes.Commands.CreateRoute
 {
     public class CreateRouteHandler : IRequestHandler<CreateRouteCommand, CreateRouteResponse>
     {
         private readonly IRouteRepository _routeRepository;
+        private readonly ITagRepository _tagRepository;
         private readonly IUnitOfWork _unitOfWork;
 
-        public CreateRouteHandler(IRouteRepository routeRepository, IUnitOfWork unitOfWork)
+        public CreateRouteHandler(IRouteRepository routeRepository, ITagRepository tagRepository, IUnitOfWork unitOfWork)
         {
             _routeRepository = routeRepository;
+            _tagRepository = tagRepository;
             _unitOfWork = unitOfWork;
         }
 
@@ -56,7 +53,21 @@ namespace ContentService.Application.Features.Routes.Commands.CreateRoute
             });
             }
 
+            var tags = await _tagRepository.GetByIdsAsync(request.TagIds, cancellationToken);
+
+            if (tags.Count != request.TagIds.Count)
+            {
+                throw new ValidationException(new Dictionary<string, string[]>
+            {
+                {
+                    nameof(request.TagIds),
+                    new[] { "One or more tags do not exist." }
+                }
+            });
+            }
+
             var routeId = Guid.NewGuid();
+
             var route = new Route
             {
                 Id = routeId,
@@ -70,7 +81,15 @@ namespace ContentService.Application.Features.Routes.Commands.CreateRoute
                 {
                     RouteId = routeId,
                     FavoritesCount = 0
-                }
+                },
+
+                RouteTags = request.TagIds
+                .Select(tagId => new RouteTag
+                {
+                    RouteId = routeId,
+                    TagId = tagId
+                })
+                .ToList()
             };
 
             try

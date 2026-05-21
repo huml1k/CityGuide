@@ -55,7 +55,7 @@ namespace ContentService.Infrastructure.Repositories
 
         public async Task<Route?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
         {
-            return await _context.Routes.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+            return await _context.Routes.Include(r => r.RouteTags).FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
         }
 
         public async Task<IReadOnlyCollection<Route>> GetByTagAsync(Guid tagId, CancellationToken cancellationToken = default)
@@ -69,6 +69,8 @@ namespace ContentService.Infrastructure.Repositories
                 .Include(x => x.RouteImages)
                 .Include(x => x.AudioFiles)
                 .Include(x => x.RouteStats)
+                .Include(x => x.RouteTags)
+                    .ThenInclude(rt => rt.Tag)
                 .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
         }
 

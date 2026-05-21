@@ -16,5 +16,7 @@ namespace ContentService.Application.Features.Routes.Commands.UpdateRoute
         public int DurationMinutes { get; set; }
 
         public string? GoogleMapsUrl { get; set; }
+
+        public List<Guid> TagIds { get; set; } = [];
     }
 }

@@ -1,6 +1,7 @@
 ﻿using ContentService.Application.Common.Exceptions;
 using ContentService.Application.DTOs;
 using ContentService.Application.Interfaces;
+using ContentService.Domain.Entities;
 using ContentService.Domain.Interfaces.Repositories;
 using MediatR;
 using System;
@@ -12,12 +13,14 @@ namespace ContentService.Application.Features.Routes.Commands.UpdateRoute
     public class UpdateRouteHandler : IRequestHandler<UpdateRouteCommand, UpdateRouteResponse>
     {
         private readonly IRouteRepository _routeRepository;
+        private readonly ITagRepository _tagRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IKafkaEventPublisher _kafkaEventPublisher;
 
-        public UpdateRouteHandler(IRouteRepository routeRepository, IUnitOfWork unitOfWork, IKafkaEventPublisher kafkaEventPublisher)
+        public UpdateRouteHandler(IRouteRepository routeRepository, ITagRepository tagRepository, IUnitOfWork unitOfWork, IKafkaEventPublisher kafkaEventPublisher)
         {
             _kafkaEventPublisher = kafkaEventPublisher;
+            _tagRepository = tagRepository;
             _routeRepository = routeRepository;
             _unitOfWork = unitOfWork;
         }
@@ -59,6 +62,30 @@ namespace ContentService.Application.Features.Routes.Commands.UpdateRoute
                 }
                     });
             }
+
+            var tags = await _tagRepository.GetByIdsAsync(request.TagIds, cancellationToken);
+
+            if (tags.Count != request.TagIds.Count)
+            {
+                throw new ValidationException(
+                    new Dictionary<string, string[]>
+                    {
+            {
+                    nameof(request.TagIds),
+                    new[] { "One or more tags do not exist." }
+            }
+                    });
+            }
+
+            route.RouteTags.Clear();
+
+            route.RouteTags = request.TagIds
+                .Select(tagId => new RouteTag
+                {
+                    RouteId = route.Id,
+                    TagId = tagId
+                })
+                .ToList();
 
             route.Title = request.Title;
             route.Description = request.Description;

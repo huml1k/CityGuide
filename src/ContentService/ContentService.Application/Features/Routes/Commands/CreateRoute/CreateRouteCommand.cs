@@ -17,5 +17,7 @@ namespace ContentService.Application.Features.Routes.Commands.CreateRoute
         public int DurationMinutes { get; set; }
 
         public string? GoogleMapsUrl { get; set; }
+
+        public List<Guid> TagIds { get; set; } = [];
     }
 }
