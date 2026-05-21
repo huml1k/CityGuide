@@ -5,18 +5,21 @@
     let displayedCount = 5;
     let myRoutes = [];
 
-    async function loadProfile() {
-        if (!(await utils.requireCreator('login.html'))) return;
+   async function loadProfile() {
+    if (!(await utils.requireCreator('login.html'))) return;
 
-        try {
-            const profile = await api.getMyProfile();
-            document.getElementById('creatorName').value = profile.fullName || '';
-        } catch (err) {
-            if (!err.message.includes('авторизац')) {
-                utils.showToast(err.message, 'error');
-            }
+    try {
+        const profile = await api.getMyProfile();
+
+        document.getElementById('userEmail').textContent =
+            api.getClaims().email || '—';
+
+    } catch (err) {
+        if (!err.message.includes('авторизац')) {
+            utils.showToast(err.message, 'error');
         }
     }
+}
 
     window.saveCreatorProfile = async function () {
         const fullName = document.getElementById('creatorName').value.trim();

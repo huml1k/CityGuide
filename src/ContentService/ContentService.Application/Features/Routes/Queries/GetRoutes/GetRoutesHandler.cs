@@ -18,7 +18,7 @@ namespace ContentService.Application.Features.Routes.Queries.GetRoutes
 
         public async Task<IReadOnlyCollection<GetRoutesResponse>> Handle(GetRoutesQuery request, CancellationToken cancellationToken)
         {
-            var routes = await _routeRepository.GetAllAsync(cancellationToken);
+            var routes = await _routeRepository.GetApprovedAsync(cancellationToken);
 
             if (routes is null || !routes.Any())
             {

@@ -44,5 +44,7 @@ namespace ContentService.Domain.Interfaces.Repositories
         Task<bool> ExistsAsync(
             string name,
             CancellationToken cancellationToken = default);
+
+        Task<List<Tag>> GetByIdsAsync(List<Guid> ids, CancellationToken cancellationToken);
     }
 }

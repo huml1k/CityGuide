@@ -3,7 +3,7 @@
     const utils = window.CityGuideUtils;
 
     function createFavoriteCard(route) {
-        const tag = route.tags?.[0] || 'Маршрут';
+        const tag = route.tags?.[0]?.name || 'Маршрут';
         const imageUrl = api.getRouteCoverImageUrl(route) || utils.getRoutePlaceholder(route.title);
 
         const card = document.createElement('div');

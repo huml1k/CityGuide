@@ -91,10 +91,15 @@
 
             const tagsContainer = document.getElementById('tagsContainer');
             tagsContainer.innerHTML = '';
+
             (route.tags || []).forEach((tag) => {
                 const span = document.createElement('span');
-                span.className = 'px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-medium';
-                span.textContent = tag;
+
+                span.className =
+                    'px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-medium';
+
+                span.textContent = tag.name;
+
                 tagsContainer.appendChild(span);
             });
 
@@ -116,13 +121,17 @@
 
             const mapFrame = document.getElementById('mapFrame');
             const mapLink = document.getElementById('mapLink');
-            if (route.googleMapsUrl && mapLink) {
-                mapLink.href = route.googleMapsUrl;
-                mapLink.classList.remove('hidden');
-            } else if (mapLink) {
+
+            if (route.googleMapsUrl) {
+
+                mapFrame.src = route.googleMapsUrl;
+                mapFrame.classList.remove('hidden');
+
+            } else {
+
+                mapFrame.classList.add('hidden');
                 mapLink.classList.add('hidden');
             }
-            if (mapFrame) mapFrame.classList.add('hidden');
 
             await loadAudio(route.audioFiles);
 

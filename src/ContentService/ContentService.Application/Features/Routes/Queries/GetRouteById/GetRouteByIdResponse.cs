@@ -1,5 +1,6 @@
 ﻿using ContentService.Application.DTOs;
 using ContentService.Application.Features.Routes.DTOs;
+using ContentService.Application.Features.Tags.DTOs;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -30,6 +31,6 @@ namespace ContentService.Application.Features.Routes.Queries.GetRouteById
 
         public List<RouteImageDto> Images { get; set; } = [];
 
-        public IReadOnlyCollection<string> Tags { get; set; } = [];
+        public IReadOnlyCollection<TagDto> Tags { get; set; } = [];
     }
 }

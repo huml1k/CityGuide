@@ -478,6 +478,24 @@
         });
     }
 
+    async function updateMyProfile(data) {
+        const res = await fetch('/api/UserProfiles/me', {
+            method: 'PATCH', 
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+
+        if (!res.ok) {
+            const errorText = await res.text(); 
+            throw new Error(errorText || 'Ошибка обновления профиля');
+        }
+
+        const text = await res.text();
+        return text ? JSON.parse(text) : null;
+    }
+
     async function deleteRoute(id) {
         return apiRequest(`/api/routes/${id}`, { method: 'DELETE' });
     }

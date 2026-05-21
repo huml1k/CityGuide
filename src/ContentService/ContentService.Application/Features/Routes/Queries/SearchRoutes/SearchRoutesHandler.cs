@@ -58,6 +58,7 @@ namespace ContentService.Application.Features.Routes.Queries.SearchRoutes
                         Title = route.Title,
                         Description = route.Description,
                         FavoritesCount = route.RouteStats.FavoritesCount,
+                        DurationMinutes = route.DurationMinutes,
                         CoverImageId = coverId,
                         CoverImageExtension = coverExt
                     };

@@ -67,7 +67,6 @@
 
         try {
             const profile = await api.getMyProfile();
-            document.getElementById('userName').value = profile.fullName || '';
             document.getElementById('userEmail').textContent =
                 api.getClaims().email || '—';
         } catch (err) {
@@ -75,17 +74,8 @@
             utils.showToast('Профиль: ' + err.message, 'error');
         }
     }
+    
 
-    window.saveProfile = async function () {
-        const fullName = document.getElementById('userName').value.trim();
-        const statusEl = document.getElementById('saveStatus');
-        try {
-            await api.updateMyProfile({ fullName });
-            utils.showFormMessage(statusEl, 'Сохранено', 'success');
-        } catch (err) {
-            utils.showFormMessage(statusEl, err.message, 'error');
-        }
-    };
 
     async function loadFavoritesCount() {
         try {
@@ -93,7 +83,7 @@
             const count = ids?.length || 0;
             const el = document.getElementById('favoritesCountText');
             if (el) {
-                el.textContent = `${count} сохранённых маршрут${count === 1 ? '' : count < 5 ? 'а' : 'ов'}`;
+                el.textContent = `Cохранённых маршрутов: ${count}`;
             }
         } catch {
             /* ignore */
